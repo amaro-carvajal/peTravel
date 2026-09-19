@@ -3,6 +3,7 @@ import { paseadores } from "./data/paseadores";
 import type { PaseadorData } from "./types/data";
 import PaseadorCard from "./components/PaseadorCard";
 import PaseadorPerfilModal from "./components/PaseadorPerfilModal";
+import "./App.css";
 
 const App = () => {
   const [comunaSeleccionada, setComunaSeleccionada] =
@@ -18,31 +19,44 @@ const App = () => {
         );
 
   return (
-    <div>
-      <h1>peTravel</h1>
+    <div className="container">
+      <header className="header">
+        <h1>peTravel</h1>
+        <p>Encuentra paseadores de confianza para tu mascota</p>
+      </header>
 
-      <label>
-        Filtrar por comuna:{" "}
+      <div className="filtro">
+        <label htmlFor="comuna-filtro">Filtrar por comuna:</label>
         <select
+          id="comuna-filtro"
           value={comunaSeleccionada}
           onChange={(event) => setComunaSeleccionada(event.target.value)}
         >
-          <option value="Todas">Todas</option>
+          <option value="Todas">Todas las comunas</option>
           <option value="Providencia">Providencia</option>
           <option value="Ñuñoa">Ñuñoa</option>
           <option value="Quilicura">Quilicura</option>
         </select>
-      </label>
+      </div>
 
-      <h2>Paseadores disponibles</h2>
+      <section className="panel-paseadores">
+        <div className="panel-header">
+          <h2>Paseadores disponibles</h2>
+          <span className="badge-contador">
+            {paseadoresAMostrar.length} disponibles
+          </span>
+        </div>
 
-      {paseadoresAMostrar.map((paseador) => (
-        <PaseadorCard
-          key={paseador.id}
-          paseador={paseador}
-          onVerPerfil={setPaseadorSeleccionado}
-        />
-      ))}
+        <div className="grid">
+          {paseadoresAMostrar.map((paseador) => (
+            <PaseadorCard
+              key={paseador.id}
+              paseador={paseador}
+              onVerPerfil={setPaseadorSeleccionado}
+            />
+          ))}
+        </div>
+      </section>
 
       <PaseadorPerfilModal
         paseador={paseadorSeleccionado}
