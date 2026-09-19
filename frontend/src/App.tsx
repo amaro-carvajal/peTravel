@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { paseadores } from "./data/paseadores";
+import type { PaseadorData } from "./types/data";
 import PaseadorCard from "./components/PaseadorCard";
+import PaseadorPerfilModal from "./components/PaseadorPerfilModal";
 
 const App = () => {
   const [comunaSeleccionada, setComunaSeleccionada] =
     useState<string>("Todas");
+  const [paseadorSeleccionado, setPaseadorSeleccionado] =
+    useState<PaseadorData | null>(null);
 
   const paseadoresAMostrar =
     comunaSeleccionada === "Todas"
@@ -36,8 +40,14 @@ const App = () => {
         <PaseadorCard
           key={paseador.id}
           paseador={paseador}
+          onVerPerfil={setPaseadorSeleccionado}
         />
       ))}
+
+      <PaseadorPerfilModal
+        paseador={paseadorSeleccionado}
+        onClose={() => setPaseadorSeleccionado(null)}
+      />
     </div>
   );
 };
