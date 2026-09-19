@@ -62,58 +62,67 @@ const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) =>
               {inicial}
             </div>
           )}
-          <div>
+          <div className="modal-header-info">
             <h2>{paseador.nombre}</h2>
-            <p>Comuna base: {paseador.comuna}</p>
-            <p>Tarifa: ${paseador.tarifa} por hora</p>
-            <p>Calificación: {paseador.calificacion} / 5</p>
+            <div className="modal-badges">
+              <span className="badge">comuna: {paseador.comuna}</span>
+              <span className="badge">tarifa: ${paseador.tarifa.toLocaleString('es-CL')}/hr</span>
+              <span className="badge">⭐ {paseador.calificacion}</span>
+            </div>
           </div>
         </header>
 
-        <p className="modal-descripcion">{paseador.descripcion}</p>
+        <div className="modal-body">
+          <p className="modal-descripcion">"{paseador.descripcion}"</p>
 
-        <section>
-          <h3>Disponibilidad horaria</h3>
-          <ul>
-            {paseador.disponibilidad.map((bloque) => (
-              <li key={bloque}>{bloque}</li>
-            ))}
-          </ul>
-        </section>
+          <div className="modal-grid-info">
+            <section>
+              <h3> Disponibilidad</h3>
+              <ul>
+                {paseador.disponibilidad.map((bloque) => (
+                  <li key={bloque}>{bloque}</li>
+                ))}
+              </ul>
+            </section>
 
-        <section>
-          <h3>Zonas de cobertura</h3>
-          <ul>
-            {paseador.zonas.map((zona) => (
-              <li key={zona}>{zona}</li>
-            ))}
-          </ul>
-        </section>
+            <section>
+              <h3> Zonas de cobertura</h3>
+              <ul>
+                {paseador.zonas.map((zona) => (
+                  <li key={zona}>{zona}</li>
+                ))}
+              </ul>
+            </section>
+          </div>
 
-        <section>
-          <h3>Contacto</h3>
-          <p>Teléfono: {paseador.contacto.telefono}</p>
-          <p>Email: {paseador.contacto.email}</p>
-        </section>
+          <section className="modal-contacto">
+            <h3> Contacto Directo</h3>
+            <div className="contacto-box">
+              <p><strong>Teléfono:</strong> {paseador.contacto.telefono}</p>
+              <p><strong>Email:</strong> {paseador.contacto.email}</p>
+            </div>
+          </section>
 
-        <section>
-          <h3>Reseñas de clientes ({paseador.resenas.length})</h3>
-          {paseador.resenas.length === 0 ? (
-            <p>Este paseador aún no tiene reseñas.</p>
-          ) : (
-            <ul className="modal-resenas">
-              {paseador.resenas.map((resena) => (
-                <li key={resena.id}>
-                  <strong>{resena.autor}</strong> — {resena.puntaje}/5
-                  <br />
-                  <span>{resena.comentario}</span>
-                  <br />
-                  <small>{resena.fecha}</small>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+          <section>
+            <h3>💬 Reseñas de clientes ({paseador.resenas.length})</h3>
+            {paseador.resenas.length === 0 ? (
+              <p className="sin-resenas">Este paseador aún no tiene reseñas.</p>
+            ) : (
+              <div className="modal-resenas">
+                {paseador.resenas.map((resena) => (
+                  <div key={resena.id} className="resena-card">
+                    <div className="resena-header">
+                      <span>{resena.autor}</span>
+                      <span className="resena-puntaje">⭐ {resena.puntaje}/5</span>
+                    </div>
+                    <p className="resena-comentario">{resena.comentario}</p>
+                    <small className="resena-fecha">{resena.fecha}</small>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

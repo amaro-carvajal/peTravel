@@ -5,6 +5,7 @@ export const paseadores: PaseadorData[] = [
     id: 1,
     nombre: "Carlos Pérez",
     comuna: "Providencia",
+    foto: "https://i.pravatar.cc/150?img=11",
     tarifa: 5000,
     calificacion: 4.8,
     descripcion: "Experiencia paseando perros medianos y grandes.",
@@ -38,6 +39,7 @@ export const paseadores: PaseadorData[] = [
     id: 2,
     nombre: "Ana Soto",
     comuna: "Ñuñoa",
+    foto: "https://i.pravatar.cc/150?img=31",
     tarifa: 6000,
     calificacion: 4.9,
     descripcion: "Amante de los animales y paseadora con experiencia.",
@@ -100,4 +102,38 @@ export const paseadores: PaseadorData[] = [
       },
     ],
   },
+  {
+    id: 4,
+    nombre: "Valentina Castro",
+    comuna: "Providencia",
+    tarifa: 5500,
+    calificacion: 4.7,
+    descripcion: "Estudiante de veterinaria, apasionada por el cuidado y bienestar de tus mascotas.",
+    foto: "https://i.pravatar.cc/150?img=47",
+    disponibilidad: [
+      "Lunes, Miércoles y Viernes: 08:00 - 12:00",
+      "Fines de semana: 15:00 - 19:00",
+    ],
+    zonas: ["Providencia", "Santiago Centro", "Recoleta"],
+    contacto: {
+      telefono: "+56 9 4444 3333",
+      email: "valentina.castro@petravel.cl",
+    },
+    resenas: [
+      {
+        id: 1,
+        autor: "Martín Vargas",
+        puntaje: 5,
+        comentario: "Excelente disposición, mi perro es muy ansioso y ella supo manejarlo perfecto.",
+        fecha: "2026-09-15",
+      },
+      {
+        id: 2,
+        autor: "Sofía Medina",
+        puntaje: 4.5,
+        comentario: "Muy responsable con los horarios. Me manda fotos durante el recorrido.",
+        fecha: "2026-09-18",
+      },
+    ],
+  }
 ];
