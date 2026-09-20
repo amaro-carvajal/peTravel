@@ -8,7 +8,7 @@ body {
 
 /* Contenedor central de la app */
 .container {
-  max-width: 920px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 36px 18px;
 }
@@ -22,7 +22,7 @@ body {
 }
 
 .navbar-content {
-  max-width: 920px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 18px;
   display: flex;
@@ -52,7 +52,6 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin: 24px 0;
   border: 1px solid #dbeafe;
 }
 
@@ -60,21 +59,31 @@ body {
   font-weight: 600;
   color: #1e3a8a;
   font-size: 0.95rem;
+  white-space: nowrap; 
 }
 
-.filtro select {
+.filtro select,
+.filtro input[type="text"] {
   padding: 8px 12px;
   border-radius: 8px;
   border: 1.5px solid #bfdbfe;
   background: #f8fafc;
   color: #1e3a8a;
-  cursor: pointer;
   outline: none;
   font-size: 0.95rem;
 }
 
-.filtro select:focus {
+.filtro select {
+  cursor: pointer;
+}
+
+.filtro select:focus,
+.filtro input[type="text"]:focus {
   border-color: #2563eb;
+}
+
+.filtro input[type="range"] {
+  accent-color: #1d4ed8; 
 }
 
 .panel-paseadores {
