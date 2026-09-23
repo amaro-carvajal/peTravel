@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import type { PaseadorData } from "../types/data";
 import "./PaseadorPerfilModal.css";
 
@@ -7,23 +6,10 @@ interface PaseadorPerfilModalProps {
   onClose: () => void;
 }
 
-const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) => {
-  useEffect(() => {
-    if (!paseador) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [paseador, onClose]);
-
+const PaseadorPerfilModal = ({
+  paseador,
+  onClose,
+}: PaseadorPerfilModalProps) => {
   if (!paseador) return null;
 
   const inicial = paseador.nombre.charAt(0).toUpperCase();
@@ -32,6 +18,11 @@ const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) =>
     <div
       className="modal-backdrop"
       onClick={onClose}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          onClose();
+        }
+      }}
       role="presentation"
     >
       <div
@@ -46,6 +37,7 @@ const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) =>
           onClick={onClose}
           aria-label="Cerrar perfil"
           type="button"
+          autoFocus
         >
           ✕
         </button>
