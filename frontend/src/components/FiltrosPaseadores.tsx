@@ -1,3 +1,7 @@
+import type { ReactNode } from "react";
+import { Group, NativeSelect, Paper, Slider, Text, TextInput } from "@mantine/core";
+import classes from "./FiltrosPaseadores.module.css";
+
 export interface FiltrosState {
   busqueda: string;
   comuna: string;
@@ -10,64 +14,83 @@ interface FiltrosPaseadoresProps {
   onFiltroChange: (campo: keyof FiltrosState, valor: string | number) => void;
 }
 
+const COMUNAS = ["Todas", "Providencia", "Ñuñoa", "Quilicura", "Santiago Centro", "Las Condes"];
+
+const ESTRELLAS = [
+  { value: "0", label: "Cualquiera" },
+  { value: "3", label: "3+ ⭐" },
+  { value: "4", label: "4+ ⭐" },
+  { value: "4.5", label: "4.5+ ⭐" },
+];
+
+const Filtro = ({ children }: { children: ReactNode }) => (
+  <Paper px="md" py="sm" radius={12} shadow="xs" bd="1px solid #dbeafe">
+    <Group gap="sm" wrap="nowrap">
+      {children}
+    </Group>
+  </Paper>
+);
+
+const Etiqueta = ({ htmlFor, children }: { htmlFor?: string; children: ReactNode }) => (
+  <Text component="label" htmlFor={htmlFor} fw={600} fz="sm" c="#1e3a8a" style={{ whiteSpace: "nowrap" }}>
+    {children}
+  </Text>
+);
+
 const FiltrosPaseadores = ({ filtros, onFiltroChange }: FiltrosPaseadoresProps) => {
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", margin: "24px 0" }}>
-      <div className="filtro">
-        <label htmlFor="busqueda">Buscar:</label>
-        <input
+    <Group gap="md" my="lg">
+      <Filtro>
+        <Etiqueta htmlFor="busqueda">Buscar:</Etiqueta>
+        <TextInput
           id="busqueda"
-          type="text"
           placeholder="Ej. Juan, perros grandes..."
+          radius="md"
+          classNames={{ input: classes.input }}
           value={filtros.busqueda}
-          onChange={(e) => onFiltroChange("busqueda", e.target.value)}
+          onChange={(e) => onFiltroChange("busqueda", e.currentTarget.value)}
         />
-      </div>
+      </Filtro>
 
-      <div className="filtro">
-        <label htmlFor="comuna">Comuna:</label>
-        <select
+      <Filtro>
+        <Etiqueta htmlFor="comuna">Comuna:</Etiqueta>
+        <NativeSelect
           id="comuna"
+          data={COMUNAS}
+          radius="md"
+          classNames={{ input: classes.input }}
           value={filtros.comuna}
-          onChange={(e) => onFiltroChange("comuna", e.target.value)}
-        >
-          <option value="Todas">Todas</option>
-          <option value="Providencia">Providencia</option>
-          <option value="Ñuñoa">Ñuñoa</option>
-          <option value="Quilicura">Quilicura</option>
-          <option value="Santiago Centro">Santiago Centro</option>
-          <option value="Las Condes">Las Condes</option>
-        </select>
-      </div>
-
-      <div className="filtro">
-        <label htmlFor="calificacion">Estrellas:</label>
-        <select
-          id="calificacion"
-          value={filtros.calificacionMinima}
-          onChange={(e) => onFiltroChange("calificacionMinima", Number(e.target.value))}
-        >
-          <option value={0}>Cualquiera</option>
-          <option value={3}>3+ ⭐</option>
-          <option value={4}>4+ ⭐</option>
-          <option value={4.5}>4.5+ ⭐</option>
-        </select>
-      </div>
-
-      <div className="filtro">
-        <label htmlFor="tarifa">Max: ${filtros.tarifaMax.toLocaleString("es-CL")}</label>
-        <input
-          id="tarifa"
-          type="range"
-          min="4000"
-          max="20000"  
-          step="500"   
-          value={filtros.tarifaMax}
-          onChange={(e) => onFiltroChange("tarifaMax", Number(e.target.value))}
-          style={{ cursor: "pointer" }}
+          onChange={(e) => onFiltroChange("comuna", e.currentTarget.value)}
         />
-      </div>
-    </div>
+      </Filtro>
+
+      <Filtro>
+        <Etiqueta htmlFor="calificacion">Estrellas:</Etiqueta>
+        <NativeSelect
+          id="calificacion"
+          data={ESTRELLAS}
+          radius="md"
+          classNames={{ input: classes.input }}
+          value={String(filtros.calificacionMinima)}
+          onChange={(e) => onFiltroChange("calificacionMinima", Number(e.currentTarget.value))}
+        />
+      </Filtro>
+
+      <Filtro>
+        <Etiqueta>Max: ${filtros.tarifaMax.toLocaleString("es-CL")}</Etiqueta>
+        <Slider
+          w={140}
+          min={4000}
+          max={20000}
+          step={500}
+          color="#1d4ed8"
+          label={null}
+          thumbLabel="Tarifa máxima"
+          value={filtros.tarifaMax}
+          onChange={(valor) => onFiltroChange("tarifaMax", valor)}
+        />
+      </Filtro>
+    </Group>
   );
 };
 

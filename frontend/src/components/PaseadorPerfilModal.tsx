@@ -1,131 +1,104 @@
-import { useEffect } from "react";
+import { Avatar, Badge, Group, List, Modal, Paper, SimpleGrid, Stack, Text } from "@mantine/core";
 import type { PaseadorData } from "../types/data";
-import "./PaseadorPerfilModal.css";
+import classes from "./PaseadorPerfilModal.module.css";
 
 interface PaseadorPerfilModalProps {
   paseador: PaseadorData | null;
   onClose: () => void;
 }
 
-const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) => {
-  useEffect(() => {
-    if (!paseador) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [paseador, onClose]);
-
-  if (!paseador) return null;
-
-  const inicial = paseador.nombre.charAt(0).toUpperCase();
-
-  return (
-    <div
-      className="modal-backdrop"
-      onClick={onClose}
-      role="presentation"
-    >
-      <div
-        className="modal-contenido"
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Perfil de ${paseador.nombre}`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button
-          className="modal-cerrar"
-          onClick={onClose}
-          aria-label="Cerrar perfil"
-          type="button"
-        >
-          ✕
-        </button>
-
-        <header className="modal-header">
-          {paseador.foto ? (
-            <img
-              className="modal-foto"
+const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) => (
+  <Modal.Root
+    opened={paseador !== null}
+    onClose={onClose}
+    size={650}
+    radius={16}
+    padding={0}
+    centered
+    transitionProps={{ transition: "fade-up", duration: 300, exitDuration: 0 }}
+  >
+    <Modal.Overlay color="#0f172a" backgroundOpacity={0.6} blur={4} />
+    <Modal.Content>
+      {paseador && (
+        <>
+          <header className={classes.header}>
+            <Modal.CloseButton className={classes.close} aria-label="Cerrar perfil" />
+            <Avatar
               src={paseador.foto}
               alt={`Foto de ${paseador.nombre}`}
-            />
-          ) : (
-            <div className="modal-avatar" aria-hidden="true">
-              {inicial}
+              size={80}
+              variant="white"
+              color="#0d47a1"
+            >
+              {paseador.nombre.charAt(0).toUpperCase()}
+            </Avatar>
+            <div>
+              <Modal.Title>{paseador.nombre}</Modal.Title>
+              <Group gap="sm">
+                <Badge className={classes.badge}>comuna: {paseador.comuna}</Badge>
+                <Badge className={classes.badge}>
+                  tarifa: ${paseador.tarifa.toLocaleString("es-CL")}/hr
+                </Badge>
+                <Badge className={classes.badge}>⭐ {paseador.calificacion}</Badge>
+              </Group>
             </div>
-          )}
-          <div className="modal-header-info">
-            <h2>{paseador.nombre}</h2>
-            <div className="modal-badges">
-              <span className="badge">comuna: {paseador.comuna}</span>
-              <span className="badge">tarifa: ${paseador.tarifa.toLocaleString('es-CL')}/hr</span>
-              <span className="badge">⭐ {paseador.calificacion}</span>
-            </div>
-          </div>
-        </header>
+          </header>
 
-        <div className="modal-body">
-          <p className="modal-descripcion">"{paseador.descripcion}"</p>
+          <Stack gap="xl" className={classes.body}>
+            <Text className={classes.descripcion}>"{paseador.descripcion}"</Text>
 
-          <div className="modal-grid-info">
+            <SimpleGrid cols={{ base: 1, xs: 2 }}>
+              <section>
+                <h3>Disponibilidad</h3>
+                <List listStyleType="none" spacing="xs" classNames={{ item: classes.caja }}>
+                  {paseador.disponibilidad.map((bloque) => (
+                    <List.Item key={bloque}>{bloque}</List.Item>
+                  ))}
+                </List>
+              </section>
+
+              <section>
+                <h3>Zonas de cobertura</h3>
+                <List listStyleType="none" spacing="xs" classNames={{ item: classes.caja }}>
+                  {paseador.zonas.map((zona) => (
+                    <List.Item key={zona}>{zona}</List.Item>
+                  ))}
+                </List>
+              </section>
+            </SimpleGrid>
+
             <section>
-              <h3> Disponibilidad</h3>
-              <ul>
-                {paseador.disponibilidad.map((bloque) => (
-                  <li key={bloque}>{bloque}</li>
-                ))}
-              </ul>
+              <h3>Contacto Directo</h3>
+              <Paper className={`${classes.caja} ${classes.contacto}`}>
+                <p><b>Teléfono:</b> {paseador.contacto.telefono}</p>
+                <p><b>Email:</b> {paseador.contacto.email}</p>
+              </Paper>
             </section>
 
             <section>
-              <h3> Zonas de cobertura</h3>
-              <ul>
-                {paseador.zonas.map((zona) => (
-                  <li key={zona}>{zona}</li>
-                ))}
-              </ul>
+              <h3>💬 Reseñas de clientes ({paseador.resenas.length})</h3>
+              {paseador.resenas.length === 0 ? (
+                <Text c="dimmed">Este paseador aún no tiene reseñas.</Text>
+              ) : (
+                <Stack>
+                  {paseador.resenas.map((resena) => (
+                    <Paper key={resena.id} className={`${classes.caja} ${classes.resena}`}>
+                      <Group justify="space-between">
+                        <b>{resena.autor}</b>
+                        <b className={classes.puntaje}>⭐ {resena.puntaje}/5</b>
+                      </Group>
+                      <p>{resena.comentario}</p>
+                      <small>{resena.fecha}</small>
+                    </Paper>
+                  ))}
+                </Stack>
+              )}
             </section>
-          </div>
-
-          <section className="modal-contacto">
-            <h3> Contacto Directo</h3>
-            <div className="contacto-box">
-              <p><strong>Teléfono:</strong> {paseador.contacto.telefono}</p>
-              <p><strong>Email:</strong> {paseador.contacto.email}</p>
-            </div>
-          </section>
-
-          <section>
-            <h3>💬 Reseñas de clientes ({paseador.resenas.length})</h3>
-            {paseador.resenas.length === 0 ? (
-              <p className="sin-resenas">Este paseador aún no tiene reseñas.</p>
-            ) : (
-              <div className="modal-resenas">
-                {paseador.resenas.map((resena) => (
-                  <div key={resena.id} className="resena-card">
-                    <div className="resena-header">
-                      <span>{resena.autor}</span>
-                      <span className="resena-puntaje">⭐ {resena.puntaje}/5</span>
-                    </div>
-                    <p className="resena-comentario">{resena.comentario}</p>
-                    <small className="resena-fecha">{resena.fecha}</small>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-};
+          </Stack>
+        </>
+      )}
+    </Modal.Content>
+  </Modal.Root>
+);
 
 export default PaseadorPerfilModal;

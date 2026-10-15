@@ -1,4 +1,6 @@
+import { Avatar, Badge, Button, Card, Group, Stack, Text, Title } from "@mantine/core";
 import type { PaseadorData } from "../types/data";
+import classes from "./PaseadorCard.module.css";
 
 interface PaseadorCardProps {
   paseador: PaseadorData;
@@ -7,35 +9,48 @@ interface PaseadorCardProps {
 
 const PaseadorCard = ({ paseador, onVerPerfil }: PaseadorCardProps) => {
   const inicial = paseador.nombre.charAt(0).toUpperCase();
+
   return (
-    <div className="paseador-card">
-      <div className="card-header">
-        {paseador.foto ? (
-          <img className="card-avatar-img" src={paseador.foto} alt={paseador.nombre} />
-        ) : (
-          <div className="card-avatar">{inicial}</div>
-        )}
-        <div className="card-title-group">
-          <h3>{paseador.nombre}</h3>
-          <p className="card-comuna">📍 {paseador.comuna}</p>
-        </div>
-      </div>
+    <Card padding="md" radius={12} className={classes.card}>
+      <Stack gap="md" h="100%">
+        <Group wrap="nowrap">
+          <Avatar
+            src={paseador.foto}
+            alt={paseador.nombre}
+            size={50}
+            color="blue"
+            bd="2px solid #bfdbfe"
+          >
+            {inicial}
+          </Avatar>
+          <div>
+            <Title order={3} fz="lg" c="#1e3a8a">
+              {paseador.nombre}
+            </Title>
+            <Text size="sm" c="dimmed">
+              📍 {paseador.comuna}
+            </Text>
+          </div>
+        </Group>
 
-      <div className="card-badges">
-        <span className="badge-light"> ${paseador.tarifa.toLocaleString('es-CL')}/hr</span>
-        <span className="badge-light">⭐ {paseador.calificacion}</span>
-      </div>
+        <Group gap="xs">
+          <Badge variant="light" color="gray" size="lg" tt="none">
+            ${paseador.tarifa.toLocaleString("es-CL")}/hr
+          </Badge>
+          <Badge variant="light" color="gray" size="lg" tt="none">
+            ⭐ {paseador.calificacion}
+          </Badge>
+        </Group>
 
-      <p className="card-descripcion">"{paseador.descripcion}"</p>
+        <Text size="sm" c="slate.7" fs="italic" flex={1}>
+          "{paseador.descripcion}"
+        </Text>
 
-      <button 
-        className="btn-ver-perfil" 
-        type="button" 
-        onClick={() => onVerPerfil(paseador)}
-      >
-        Ver perfil
-      </button>
-    </div>
+        <Button fullWidth color="#1455b5" radius={4} onClick={() => onVerPerfil(paseador)}>
+          Ver perfil
+        </Button>
+      </Stack>
+    </Card>
   );
 };
 

@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { Badge, Container, Group, Paper, Text, Title } from "@mantine/core";
 import { paseadores } from "./data/paseadores";
 import type { PaseadorData } from "./types/data";
 import PaseadorCard from "./components/PaseadorCard";
 import PaseadorPerfilModal from "./components/PaseadorPerfilModal";
 import FiltrosPaseadores, { type FiltrosState } from "./components/FiltrosPaseadores";
 import Navbar from "./components/Navbar";
-import "./App.css";
+import classes from "./App.module.css";
 
 const App = () => {
   const [filtros, setFiltros] = useState<FiltrosState>({
@@ -34,21 +35,21 @@ const App = () => {
   });
 
   return (
-    <div className="app-layout">
+    <>
       <Navbar />
-      <main className="container">
+      <Container component="main" size={1200} className={classes.main}>
         <FiltrosPaseadores filtros={filtros} onFiltroChange={handleFiltroChange} />
 
-        <section className="panel-paseadores">
-          <div className="panel-header">
-            <h2>Paseadores disponibles</h2>
-            <span className="badge-contador">
-              {paseadoresAMostrar.length} disponibles
-            </span>
-          </div>
+        <Paper component="section" className={classes.panel}>
+          <Group justify="space-between" className={classes.header}>
+            <Title order={2} className={classes.titulo}>
+              Paseadores disponibles
+            </Title>
+            <Badge className={classes.contador}>{paseadoresAMostrar.length} disponibles</Badge>
+          </Group>
 
           {paseadoresAMostrar.length > 0 ? (
-            <div className="grid">
+            <div className={classes.grid}>
               {paseadoresAMostrar.map((paseador) => (
                 <PaseadorCard
                   key={paseador.id}
@@ -58,18 +59,18 @@ const App = () => {
               ))}
             </div>
           ) : (
-            <p className="sin-resultados">
+            <Text ta="center" c="dimmed">
               No se encontraron paseadores con esos filtros.
-            </p>
+            </Text>
           )}
-        </section>
-      </main>
+        </Paper>
+      </Container>
 
       <PaseadorPerfilModal
         paseador={paseadorSeleccionado}
         onClose={() => setPaseadorSeleccionado(null)}
       />
-    </div>
+    </>
   );
 };
 
