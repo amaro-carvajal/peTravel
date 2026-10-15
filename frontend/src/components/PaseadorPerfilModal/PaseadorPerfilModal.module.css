@@ -1,26 +1,24 @@
 .header {
+  --group-gap: 1.5rem;
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1.5rem;
   padding: 2.5rem 2rem;
   color: white;
-  background: linear-gradient(135deg, #0d47a1 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #0d47a1, #1e3a8a);
 }
 
-.header h2 {
-  margin-bottom: 0.75rem;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: white;
+.header h2 { 
+  margin-bottom: 0.75rem; 
+  font-size: 1.8rem; 
+  font-weight: 700; 
+  color: white; 
 }
 
-.close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  color: white;
+.header 
+.close { 
+  position: absolute; 
+  top: 1rem; 
+  right: 1rem; 
+  color: white; 
 }
 
 .badge {
@@ -30,12 +28,7 @@
   padding: 0.3rem 0.8rem;
   font-size: 0.9rem;
   font-weight: 500;
-  letter-spacing: normal;
   text-transform: none;
-}
-
-.body {
-  padding: 2rem;
 }
 
 .body h3 {
@@ -45,7 +38,6 @@
   font-size: 1.05rem;
   color: #0f172a;
 }
-
 .descripcion {
   padding-bottom: 1.5rem;
   border-bottom: 1px solid #e2e8f0;
@@ -63,22 +55,21 @@
   border-radius: 8px;
   color: #475569;
 }
-
-.contacto {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1e3a8a;
+.contacto { 
+  background: #eff6ff; 
+  border-color: #bfdbfe; 
+  color: #1e3a8a; 
 }
 
-.resena p {
-  margin: 0.5rem 0;
+.resena p { 
+  margin: 0.5rem 0; 
 }
 
-.resena small {
-  font-size: 0.8rem;
-  color: #94a3b8;
+.resena small { 
+  font-size: 0.8rem; 
+  color: #94a3b8; 
 }
 
-.puntaje {
-  color: #d97706;
+.resena b:last-child { 
+  color: #d97706; 
 }

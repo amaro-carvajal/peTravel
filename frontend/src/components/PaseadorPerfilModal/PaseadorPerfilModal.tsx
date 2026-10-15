@@ -7,29 +7,25 @@ interface PaseadorPerfilModalProps {
   onClose: () => void;
 }
 
+const modalProps = {
+  size: 650,
+  radius: 16,
+  padding: 0,
+  centered: true,
+  transitionProps: { transition: "fade-up", duration: 300, exitDuration: 0 },
+} as const;
+
+const listProps = { listStyleType: "none", spacing: "xs", classNames: { item: classes.caja } } as const;
+
 const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) => (
-  <Modal.Root
-    opened={paseador !== null}
-    onClose={onClose}
-    size={650}
-    radius={16}
-    padding={0}
-    centered
-    transitionProps={{ transition: "fade-up", duration: 300, exitDuration: 0 }}
-  >
+  <Modal.Root opened={paseador !== null} onClose={onClose} {...modalProps}>
     <Modal.Overlay color="#0f172a" backgroundOpacity={0.6} blur={4} />
     <Modal.Content>
       {paseador && (
         <>
-          <header className={classes.header}>
+          <Group component="header" className={classes.header}>
             <Modal.CloseButton className={classes.close} aria-label="Cerrar perfil" />
-            <Avatar
-              src={paseador.foto}
-              alt={`Foto de ${paseador.nombre}`}
-              size={80}
-              variant="white"
-              color="#0d47a1"
-            >
+            <Avatar src={paseador.foto} alt={`Foto de ${paseador.nombre}`} size={80} variant="white" color="#0d47a1">
               {paseador.nombre.charAt(0).toUpperCase()}
             </Avatar>
             <div>
@@ -42,15 +38,15 @@ const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) =>
                 <Badge className={classes.badge}>⭐ {paseador.calificacion}</Badge>
               </Group>
             </div>
-          </header>
+          </Group>
 
-          <Stack gap="xl" className={classes.body}>
+          <Stack gap="xl" p="xl" className={classes.body}>
             <Text className={classes.descripcion}>"{paseador.descripcion}"</Text>
 
             <SimpleGrid cols={{ base: 1, xs: 2 }}>
               <section>
                 <h3>Disponibilidad</h3>
-                <List listStyleType="none" spacing="xs" classNames={{ item: classes.caja }}>
+                <List {...listProps}>
                   {paseador.disponibilidad.map((bloque) => (
                     <List.Item key={bloque}>{bloque}</List.Item>
                   ))}
@@ -59,7 +55,7 @@ const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) =>
 
               <section>
                 <h3>Zonas de cobertura</h3>
-                <List listStyleType="none" spacing="xs" classNames={{ item: classes.caja }}>
+                <List {...listProps}>
                   {paseador.zonas.map((zona) => (
                     <List.Item key={zona}>{zona}</List.Item>
                   ))}
@@ -85,7 +81,7 @@ const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) =>
                     <Paper key={resena.id} className={`${classes.caja} ${classes.resena}`}>
                       <Group justify="space-between">
                         <b>{resena.autor}</b>
-                        <b className={classes.puntaje}>⭐ {resena.puntaje}/5</b>
+                        <b>⭐ {resena.puntaje}/5</b>
                       </Group>
                       <p>{resena.comentario}</p>
                       <small>{resena.fecha}</small>
