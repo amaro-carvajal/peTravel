@@ -1,5 +1,5 @@
 import { Avatar, Badge, Button, Card, Group, Stack, Text, Title } from "@mantine/core";
-import type { PaseadorData } from "../types/data";
+import type { PaseadorData } from "../../types/data";
 import classes from "./PaseadorCard.module.css";
 
 interface PaseadorCardProps {

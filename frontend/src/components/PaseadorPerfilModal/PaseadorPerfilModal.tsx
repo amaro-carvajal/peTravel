@@ -1,5 +1,5 @@
 import { Avatar, Badge, Group, List, Modal, Paper, SimpleGrid, Stack, Text } from "@mantine/core";
-import type { PaseadorData } from "../types/data";
+import type { PaseadorData } from "../../types/data";
 import classes from "./PaseadorPerfilModal.module.css";
 
 interface PaseadorPerfilModalProps {

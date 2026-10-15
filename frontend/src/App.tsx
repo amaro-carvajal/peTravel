@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Badge, Container, Group, Paper, Text, Title } from "@mantine/core";
 import { paseadores } from "./data/paseadores";
 import type { PaseadorData } from "./types/data";
-import PaseadorCard from "./components/PaseadorCard";
-import PaseadorPerfilModal from "./components/PaseadorPerfilModal";
-import FiltrosPaseadores, { type FiltrosState } from "./components/FiltrosPaseadores";
-import Navbar from "./components/Navbar";
+import { PaseadorCard } from "./components/PaseadorCard";
+import { PaseadorPerfilModal } from "./components/PaseadorPerfilModal";
+import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
+import { Navbar }  from "./components/Navbar";
 import classes from "./App.module.css";
 
 const App = () => {
