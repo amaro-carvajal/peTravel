@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || "localhost";
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DBNAME = process.env.MONGODB_DBNAME;
-const JWT_SECRET = process.env.JWT_SECRET || "my_secret";
+const JWT_SECRET = process.env.JWT_SECRET || "my_secret"; 
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
-export default { PORT, HOST, MONGODB_URI, MONGODB_DBNAME, JWT_SECRET };
+export default { PORT, HOST, MONGODB_URI, MONGODB_DBNAME, JWT_SECRET, CLIENT_URL };
