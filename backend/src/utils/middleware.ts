@@ -23,6 +23,24 @@ declare global {
   }
 }
 
+const sanitizeBody = (body: unknown) => {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return body;
+  }
+
+  const sanitized = { ...(body as Record<string, unknown>) };
+
+  if ("password" in sanitized) {
+    sanitized.password = "[REDACTED]";
+  }
+
+  if ("passwordHash" in sanitized) {
+    sanitized.passwordHash = "[REDACTED]";
+  }
+
+  return sanitized;
+};
+
 const requestLogger = (
   request: Request,
   response: Response,
@@ -30,7 +48,7 @@ const requestLogger = (
 ) => {
   logger.info("Method:", request.method);
   logger.info("Path:  ", request.path);
-  logger.info("Body:  ", request.body);
+  logger.info("Body:  ", sanitizeBody(request.body));
   logger.info("---");
   next();
 };
@@ -40,14 +58,26 @@ const unknownEndpoint = (request: Request, response: Response) => {
 };
 
 const errorHandler = (
-  error: { name: string; message: string; code?: number },
+  error: {
+    name: string;
+    message: string;
+    code?: number;
+    status?: number;
+    type?: string;
+  },
   request: Request,
   response: Response,
   _next: NextFunction
 ) => {
   logger.error(error.message);
 
-  if (error.name === "CastError") {
+  if (
+    error.name === "SyntaxError" &&
+    error.status === 400 &&
+    error.type === "entity.parse.failed"
+  ) {
+    response.status(400).json({ error: "JSON inválido" });
+  } else if (error.name === "CastError") {
     response.status(400).json({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
     response.status(400).json({ error: error.message });
@@ -57,10 +87,14 @@ const errorHandler = (
     response.status(401).json({ error: "Token inválido" });
   } else if (error.code === 11000) {
     // índice único violado (por ejemplo, email repetido)
-    response.status(409).json({ error: "Ya existe un registro con esos datos" });
+    response.status(409).json({
+      error: "Ya existe un registro con esos datos",
+    });
   } else {
     // siempre JSON, nunca el HTML por defecto de Express
-    response.status(500).json({ error: "Error interno del servidor" });
+    response.status(500).json({
+      error: "Error interno del servidor",
+    });
   }
 };
 

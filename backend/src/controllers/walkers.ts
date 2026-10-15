@@ -2,40 +2,56 @@ import express from "express";
 import type { QueryFilter } from "mongoose";
 import Walker from "../models/walker";
 import type { WalkerData } from "../models/walker";
-
-interface WalkerQuery {
-  commune?: string;
-  maxRate?: number; 
-  minRating?: number; 
-  search?: string;
-}
-
-interface WalkerBody extends Partial<Omit<WalkerData, "id" | "rating">> {
-  rating?: unknown;
-}
+import middleware from "../utils/middleware";
 
 const router = express.Router();
 
 router.get("/", async (request, response) => {
-  const { commune, maxRate, minRating, search } = request.query as unknown as WalkerQuery;
+  const { commune, maxRate, minRating, search } = request.query;
   const filter: QueryFilter<WalkerData> = {};
 
-  if (commune !== undefined) {
+  if (typeof commune === "string") {
     filter.coverageAreas = { $in: [commune] };
   }
 
-  if (maxRate !== undefined) {
-    filter.hourlyRate = { $lte: maxRate};
+  if (typeof maxRate === "string") {
+    const maxRateNumber = Number(maxRate);
+
+    if (Number.isNaN(maxRateNumber) || maxRateNumber < 0) {
+      response.status(400).json({ error: "maxRate inválido" });
+      return;
+    }
+
+    filter.hourlyRate = { $lte: maxRateNumber };
   }
 
-  if (minRating !== undefined) {
-    filter.rating = { $gte: minRating};
+  if (typeof minRating === "string") {
+    const minRatingNumber = Number(minRating);
+
+    if (
+      Number.isNaN(minRatingNumber) ||
+      minRatingNumber < 0 ||
+      minRatingNumber > 5
+    ) {
+      response.status(400).json({ error: "minRating inválido" });
+      return;
+    }
+
+    filter.rating = { $gte: minRatingNumber };
   }
 
-  if (search !== undefined) {
-    const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (typeof search === "string") {
+    const escapedSearch = search.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+
     const regex = new RegExp(escapedSearch, "i");
-    filter.$or = [{ name: regex }, { description: regex }];
+
+    filter.$or = [
+      { name: regex },
+      { description: regex },
+    ];
   }
 
   const walkers = await Walker.find(filter);
@@ -51,32 +67,194 @@ router.get("/:id", async (request, response) => {
   response.json(walker);
 });
 
-router.post("/", async (request, response) => {
-  const { rating: _rating, ...body } = request.body as WalkerBody;
-  const walker = await Walker.create(body);
-  response.status(201).json(walker);
-});
+router.post(
+  "/",
+  middleware.withUser,
+  middleware.requireRole("walker"),
+  async (request, response) => {
+    if (!request.userId) {
+      response.status(401).json({ error: "Sesión requerida" });
+      return;
+    }
 
-router.put("/:id", async (request, response) => {
-  const { rating: _rating, ...body } = request.body as WalkerBody;
-  const walker = await Walker.findByIdAndUpdate(request.params.id, body, {
-    new: true,
-    runValidators: true,
-  });
-  if (!walker) {
-    response.status(404).json({ error: "Walker no encontrado" });
-    return;
-  }
-  response.json(walker);
-});
+    if (
+      !request.body ||
+      typeof request.body !== "object" ||
+      Array.isArray(request.body)
+    ) {
+      response.status(400).json({ error: "Datos inválidos" });
+      return;
+    }
 
-router.delete("/:id", async (request, response) => {
-  const walker = await Walker.findByIdAndDelete(request.params.id);
-  if (!walker) {
-    response.status(404).json({ error: "Walker no encontrado" });
-    return;
+    const {
+      name,
+      photo,
+      description,
+      coverageAreas,
+      hourlyRate,
+      availability,
+      phone,
+      email,
+    } = request.body;
+
+    if (!name) {
+      response.status(400).json({ error: "name missing" });
+      return;
+    }
+
+    if (!description) {
+      response.status(400).json({ error: "description missing" });
+      return;
+    }
+
+    if (!coverageAreas) {
+      response.status(400).json({ error: "coverageAreas missing" });
+      return;
+    }
+
+    if (hourlyRate === undefined) {
+      response.status(400).json({ error: "hourlyRate missing" });
+      return;
+    }
+
+    if (!phone) {
+      response.status(400).json({ error: "phone missing" });
+      return;
+    }
+
+    if (!email) {
+      response.status(400).json({ error: "email missing" });
+      return;
+    }
+
+    const walker = new Walker({
+      name,
+      photo,
+      description,
+      coverageAreas,
+      hourlyRate,
+      availability,
+      phone,
+      email,
+      user: request.userId,
+    });
+
+    const savedWalker = await walker.save();
+
+    response.status(201).json(savedWalker);
   }
-  response.status(204).end();
-});
+);
+
+router.put(
+  "/:id",
+  middleware.withUser,
+  middleware.requireRole("walker"),
+  async (request, response) => {
+    if (!request.userId) {
+      response.status(401).json({ error: "Sesión requerida" });
+      return;
+    }
+
+    if (
+      !request.body ||
+      typeof request.body !== "object" ||
+      Array.isArray(request.body)
+    ) {
+      response.status(400).json({ error: "Datos inválidos" });
+      return;
+    }
+
+    const walker = await Walker.findById(request.params.id);
+
+    if (!walker) {
+      response.status(404).json({ error: "Walker no encontrado" });
+      return;
+    }
+
+    if (!walker.user || walker.user.toString() !== request.userId) {
+      response
+        .status(403)
+        .json({ error: "No puedes modificar este perfil" });
+      return;
+    }
+
+    const {
+      name,
+      photo,
+      description,
+      coverageAreas,
+      hourlyRate,
+      availability,
+      phone,
+      email,
+    } = request.body;
+
+    if (name !== undefined) {
+      walker.name = name;
+    }
+
+    if (photo !== undefined) {
+      walker.photo = photo;
+    }
+
+    if (description !== undefined) {
+      walker.description = description;
+    }
+
+    if (coverageAreas !== undefined) {
+      walker.coverageAreas = coverageAreas;
+    }
+
+    if (hourlyRate !== undefined) {
+      walker.hourlyRate = hourlyRate;
+    }
+
+    if (availability !== undefined) {
+      walker.availability = availability;
+    }
+
+    if (phone !== undefined) {
+      walker.phone = phone;
+    }
+
+    if (email !== undefined) {
+      walker.email = email;
+    }
+
+    const updatedWalker = await walker.save();
+
+    response.json(updatedWalker);
+  }
+);
+
+router.delete(
+  "/:id",
+  middleware.withUser,
+  middleware.requireRole("walker"),
+  async (request, response) => {
+    if (!request.userId) {
+      response.status(401).json({ error: "Sesión requerida" });
+      return;
+    }
+
+    const walker = await Walker.findById(request.params.id);
+
+    if (!walker) {
+      response.status(404).json({ error: "Walker no encontrado" });
+      return;
+    }
+
+    if (!walker.user || walker.user.toString() !== request.userId) {
+      response
+        .status(403)
+        .json({ error: "No puedes eliminar este perfil" });
+      return;
+    }
+
+    await Walker.findByIdAndDelete(request.params.id);
+
+    response.status(204).end();
+  }
+);
 
 export default router;

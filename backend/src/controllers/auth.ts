@@ -9,70 +9,112 @@ import middleware from "../utils/middleware";
 const router = express.Router();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const SESSION_TIME_LIMIT= 60 * 60 * 1000; // 1h
+const SESSION_TIME_LIMIT = 60 * 60 * 1000; // 1h
 
 const cookieOptions = {
   httpOnly: true,
 };
 
-interface RegisterBody {
-  name?: string;
-  email?: string;
-  password?: string;
-  role?: string;
-}
-
-interface LoginBody {
-  email?: string;
-  password?: string;
-}
-
 // POST /auth/register: crea el usuario guardando solo el hash
 router.post("/register", async (request, response) => {
+  if (
+    !request.body ||
+    typeof request.body !== "object" ||
+    Array.isArray(request.body)
+  ) {
+    response.status(400).json({ error: "Datos de registro inválidos" });
+    return;
+  }
+
   const { name, email, password, role } = request.body;
 
-  if (!name || name.trim().length < 2) {
+  // Primero validamos los tipos recibidos
+  if (
+    typeof name !== "string" ||
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    typeof role !== "string"
+  ) {
+    response.status(400).json({ error: "Datos de registro inválidos" });
+    return;
+  }
+
+  if (name.trim().length < 2) {
     response.status(400).json({ error: "El nombre es obligatorio" });
     return;
   }
-  if (!email || !EMAIL_REGEX.test(email)) {
+
+  if (!EMAIL_REGEX.test(email)) {
     response.status(400).json({ error: "El correo es inválido" });
     return;
   }
-  if (!password || password.length < 8) {
+
+  if (password.length < 8) {
     response
       .status(400)
       .json({ error: "La contraseña debe tener al menos 8 caracteres" });
     return;
   }
+
   if (role !== "owner" && role !== "walker") {
     response.status(400).json({ error: "El rol debe ser dueño o paseador" });
     return;
   }
 
-  const existingEmail = await User.findOne({ email: email.trim().toLowerCase() });
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const existingEmail = await User.findOne({
+    email: normalizedEmail,
+  });
+
   if (existingEmail) {
     response.status(409).json({ error: "El email ya está registrado" });
     return;
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = new User({ name, email, passwordHash, role });
+
+  const user = new User({
+    name: name.trim(),
+    email: normalizedEmail,
+    passwordHash,
+    role,
+  });
+
   const savedUser = await user.save();
 
-  response.status(201).json(savedUser); 
+  response.status(201).json(savedUser);
 });
 
 // POST /auth/login: JWT en cookie httpOnly + token CSRF en un header
 router.post("/login", async (request, response) => {
+  if (
+    !request.body ||
+    typeof request.body !== "object" ||
+    Array.isArray(request.body)
+  ) {
+    response.status(401).json({ error: "Credenciales inválidas" });
+    return;
+  }
+
   const { email, password } = request.body;
 
-  const user =
-    email && password
-      ? await User.findOne({ email: email.trim().toLowerCase() })
-      : null;
-  const passwordCorrect =
-    user && (await bcrypt.compare(password as string, user.passwordHash));
+  // Login inválido siempre responde igual
+  if (
+    typeof email !== "string" ||
+    typeof password !== "string"
+  ) {
+    response.status(401).json({ error: "Credenciales inválidas" });
+    return;
+  }
+
+  const user = await User.findOne({
+    email: email.trim().toLowerCase(),
+  });
+
+  const passwordCorrect = user
+    ? await bcrypt.compare(password, user.passwordHash)
+    : false;
 
   if (!user || !passwordCorrect) {
     // mismo mensaje para email y contraseña: no revela cuál falló
@@ -83,13 +125,21 @@ router.post("/login", async (request, response) => {
   const csrf = crypto.randomUUID();
 
   const token = jwt.sign(
-    { id: user.id, name: user.name, role: user.role, csrf },
+    {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      csrf,
+    },
     config.JWT_SECRET,
     { expiresIn: "1h" }
   );
 
   response
-    .cookie("token", token, { ...cookieOptions, maxAge: SESSION_TIME_LIMIT })
+    .cookie("token", token, {
+      ...cookieOptions,
+      maxAge: SESSION_TIME_LIMIT,
+    })
     .header("X-CSRF-Token", csrf)
     .json(user);
 });
@@ -99,17 +149,18 @@ router.get("/me", middleware.withUser, async (request, response) => {
   const user = await User.findById(request.userId);
 
   if (!user) {
-    response.status(401).json({ error: "Sesión requerida" });
+    response.status(404).json({ error: "Sesión requerida" });
     return;
   }
 
-  // se reenvía el csrf por si el localStorage se limpió pero la cookie sigue viva
-  response.header("X-CSRF-Token", request.csrfToken).json(user);
+  response.status(200).json(user);
 });
 
 // POST /auth/logout: borra la cookie
 router.post("/logout", middleware.withUser, async (_request, response) => {
-  response.clearCookie("token", cookieOptions).json({ message: "Sesión cerrada" });
+  response
+    .clearCookie("token", cookieOptions)
+    .json({ message: "Sesión cerrada" });
 });
 
 export default router;
