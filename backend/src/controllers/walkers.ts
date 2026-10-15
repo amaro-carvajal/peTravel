@@ -1,17 +1,12 @@
 import express from "express";
-import type { Request } from "express";
 import type { QueryFilter } from "mongoose";
 import Walker from "../models/walker";
 import type { WalkerData } from "../models/walker";
 
-interface WalkerParams {
-  id: string;
-}
-
 interface WalkerQuery {
   commune?: string;
-  maxRate?: string;
-  minRating?: string;
+  maxRate?: number; 
+  minRating?: number; 
   search?: string;
 }
 
@@ -21,11 +16,8 @@ interface WalkerBody extends Partial<Omit<WalkerData, "id" | "rating">> {
 
 const router = express.Router();
 
-router.get("/", async (
-  request: Request<Record<string, never>, unknown, unknown, WalkerQuery>,
-  response
-) => {
-  const { commune, maxRate, minRating, search } = request.query;
+router.get("/", async (request, response) => {
+  const { commune, maxRate, minRating, search } = request.query as unknown as WalkerQuery;
   const filter: QueryFilter<WalkerData> = {};
 
   if (commune !== undefined) {
@@ -33,21 +25,11 @@ router.get("/", async (
   }
 
   if (maxRate !== undefined) {
-    const rate = Number(maxRate);
-    if (typeof maxRate !== "string" || maxRate.trim() === "" || !Number.isFinite(rate)) {
-      response.status(400).json({ error: "maxRate inválido" });
-      return;
-    }
-    filter.hourlyRate = { $lte: rate };
+    filter.hourlyRate = { $lte: maxRate};
   }
 
   if (minRating !== undefined) {
-    const rating = Number(minRating);
-    if (typeof minRating !== "string" || minRating.trim() === "" || !Number.isFinite(rating)) {
-      response.status(400).json({ error: "minRating inválido" });
-      return;
-    }
-    filter.rating = { $gte: rating };
+    filter.rating = { $gte: minRating};
   }
 
   if (search !== undefined) {
@@ -60,7 +42,7 @@ router.get("/", async (
   response.json(walkers);
 });
 
-router.get("/:id", async (request: Request<WalkerParams, unknown, unknown>, response) => {
+router.get("/:id", async (request, response) => {
   const walker = await Walker.findById(request.params.id);
   if (!walker) {
     response.status(404).json({ error: "Walker no encontrado" });
@@ -69,17 +51,14 @@ router.get("/:id", async (request: Request<WalkerParams, unknown, unknown>, resp
   response.json(walker);
 });
 
-router.post("/", async (
-  request: Request<Record<string, never>, unknown, WalkerBody>,
-  response
-) => {
-  const { rating: _rating, ...body } = request.body;
+router.post("/", async (request, response) => {
+  const { rating: _rating, ...body } = request.body as WalkerBody;
   const walker = await Walker.create(body);
   response.status(201).json(walker);
 });
 
-router.put("/:id", async (request: Request<WalkerParams, unknown, WalkerBody>, response) => {
-  const { rating: _rating, ...body } = request.body;
+router.put("/:id", async (request, response) => {
+  const { rating: _rating, ...body } = request.body as WalkerBody;
   const walker = await Walker.findByIdAndUpdate(request.params.id, body, {
     new: true,
     runValidators: true,
@@ -91,7 +70,7 @@ router.put("/:id", async (request: Request<WalkerParams, unknown, WalkerBody>, r
   response.json(walker);
 });
 
-router.delete("/:id", async (request: Request<WalkerParams, unknown, unknown>, response) => {
+router.delete("/:id", async (request, response) => {
   const walker = await Walker.findByIdAndDelete(request.params.id);
   if (!walker) {
     response.status(404).json({ error: "Walker no encontrado" });
