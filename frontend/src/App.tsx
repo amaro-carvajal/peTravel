@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Badge, Container, Group, Paper, Text, Title } from "@mantine/core";
 import { paseadores } from "./data/paseadores";
-import type { PaseadorData } from "./types/data";
+import { Route, Routes } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
-import { PaseadorPerfilModal } from "./components/PaseadorPerfilModal";
+import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
 import { Navbar }  from "./components/Navbar";
 import classes from "./App.module.css";
@@ -15,8 +15,6 @@ const App = () => {
     calificacionMinima: 0,
     tarifaMax: 20000,
   });
-
-  const [paseadorSeleccionado, setPaseadorSeleccionado] = useState<PaseadorData | null>(null);
 
   const handleFiltroChange = (campo: keyof FiltrosState, valor: string | number) => {
     setFiltros((prev) => ({ ...prev, [campo]: valor }));
@@ -37,39 +35,38 @@ const App = () => {
   return (
     <>
       <Navbar />
-      <Container component="main" size={1200} className={classes.main}>
-        <FiltrosPaseadores filtros={filtros} onFiltroChange={handleFiltroChange} />
+      <Routes>
+        <Route path="/" element={
+          <Container component="main" size={1200} className={classes.main}>
+            <FiltrosPaseadores filtros={filtros} onFiltroChange={handleFiltroChange} />
 
-        <Paper component="section" className={classes.panel}>
-          <Group justify="space-between" className={classes.header}>
-            <Title order={2} className={classes.titulo}>
-              Paseadores disponibles
-            </Title>
-            <Badge className={classes.contador}>{paseadoresAMostrar.length} disponibles</Badge>
-          </Group>
+            <Paper component="section" className={classes.panel}>
+              <Group justify="space-between" className={classes.header}>
+                <Title order={2} className={classes.titulo}>
+                  Paseadores disponibles
+                </Title>
+                <Badge className={classes.contador}>{paseadoresAMostrar.length} disponibles</Badge>
+              </Group>
 
-          {paseadoresAMostrar.length > 0 ? (
-            <div className={classes.grid}>
-              {paseadoresAMostrar.map((paseador) => (
-                <PaseadorCard
-                  key={paseador.id}
-                  paseador={paseador}
-                  onVerPerfil={setPaseadorSeleccionado}
-                />
-              ))}
-            </div>
-          ) : (
-            <Text ta="center" c="dimmed">
-              No se encontraron paseadores con esos filtros.
-            </Text>
-          )}
-        </Paper>
-      </Container>
-
-      <PaseadorPerfilModal
-        paseador={paseadorSeleccionado}
-        onClose={() => setPaseadorSeleccionado(null)}
-      />
+              {paseadoresAMostrar.length > 0 ? (
+                <div className={classes.grid}>
+                  {paseadoresAMostrar.map((paseador) => (
+                    <PaseadorCard
+                      key={paseador.id}
+                      paseador={paseador}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Text ta="center" c="dimmed">
+                  No se encontraron paseadores con esos filtros.
+                </Text>
+              )}
+            </Paper>
+          </Container>
+        } />
+        <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
+      </Routes>
     </>
   );
 };

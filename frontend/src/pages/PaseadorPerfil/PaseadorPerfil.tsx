@@ -1,35 +1,27 @@
-import { Avatar, Badge, Group, List, Modal, Paper, SimpleGrid, Stack, Text } from "@mantine/core";
-import type { PaseadorData } from "../../types/data";
-import classes from "./PaseadorPerfilModal.module.css";
-
-interface PaseadorPerfilModalProps {
-  paseador: PaseadorData | null;
-  onClose: () => void;
-}
-
-const modalProps = {
-  size: 650,
-  radius: 16,
-  padding: 0,
-  centered: true,
-  transitionProps: { transition: "fade-up", duration: 300, exitDuration: 0 },
-} as const;
+import { Avatar, Badge, Button, Container, Group, List, Paper, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { Link, useParams } from "react-router-dom";
+import { paseadores } from "../../data/paseadores";
+import classes from "./PaseadorPerfil.module.css";
 
 const listProps = { listStyleType: "none", spacing: "xs", classNames: { item: classes.caja } } as const;
 
-const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) => (
-  <Modal.Root opened={paseador !== null} onClose={onClose} {...modalProps}>
-    <Modal.Overlay color="#0f172a" backgroundOpacity={0.6} blur={4} />
-    <Modal.Content>
-      {paseador && (
-        <>
+const PaseadorPerfil = () => {
+  const { id } = useParams<{ id: string }>();
+  const paseador = paseadores.find((paseador) => String(paseador.id) === id);
+
+  return (
+    <Container component="main" size={650} py={36}>
+      <Button component={Link} to="/" variant="subtle" mb="md">
+        Volver a paseadores
+      </Button>
+      {paseador ? (
+        <Paper radius={16} className={classes.perfil}>
           <Group component="header" className={classes.header}>
-            <Modal.CloseButton className={classes.close} aria-label="Cerrar perfil" />
             <Avatar src={paseador.foto} alt={`Foto de ${paseador.nombre}`} size={80} variant="white" color="#0d47a1">
               {paseador.nombre.charAt(0).toUpperCase()}
             </Avatar>
             <div>
-              <Modal.Title>{paseador.nombre}</Modal.Title>
+              <Title order={2}>{paseador.nombre}</Title>
               <Group gap="sm">
                 <Badge className={classes.badge}>comuna: {paseador.comuna}</Badge>
                 <Badge className={classes.badge}>
@@ -91,10 +83,12 @@ const PaseadorPerfilModal = ({ paseador, onClose }: PaseadorPerfilModalProps) =>
               )}
             </section>
           </Stack>
-        </>
+        </Paper>
+      ) : (
+        <Text ta="center">Paseador no encontrado</Text>
       )}
-    </Modal.Content>
-  </Modal.Root>
-);
+    </Container>
+  );
+};
 
-export default PaseadorPerfilModal;
+export default PaseadorPerfil;

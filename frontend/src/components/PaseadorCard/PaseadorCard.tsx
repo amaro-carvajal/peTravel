@@ -1,13 +1,13 @@
 import { Avatar, Badge, Button, Card, Group } from "@mantine/core";
+import { Link } from "react-router-dom";
 import type { PaseadorData } from "../../types/data";
 import classes from "./PaseadorCard.module.css";
 
 interface PaseadorCardProps {
   paseador: PaseadorData;
-  onVerPerfil: (paseador: PaseadorData) => void;
 }
 
-const PaseadorCard = ({ paseador, onVerPerfil }: PaseadorCardProps) => (
+const PaseadorCard = ({ paseador }: PaseadorCardProps) => (
   <Card className={classes.card}>
     <Group wrap="nowrap">
       <Avatar src={paseador.foto} alt={paseador.nombre} size={50}>
@@ -30,7 +30,7 @@ const PaseadorCard = ({ paseador, onVerPerfil }: PaseadorCardProps) => (
 
     <p>"{paseador.descripcion}"</p>
 
-    <Button fullWidth onClick={() => onVerPerfil(paseador)}>
+    <Button fullWidth component={Link} to={`/paseadores/${paseador.id}`}>
       Ver perfil
     </Button>
   </Card>

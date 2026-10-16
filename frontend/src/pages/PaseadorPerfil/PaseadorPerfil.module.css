@@ -1,3 +1,8 @@
+.perfil {
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.05);
+}
+
 .header {
   --group-gap: 1.5rem;
   position: relative;
@@ -10,14 +15,6 @@
   margin-bottom: 0.75rem; 
   font-size: 1.8rem; 
   font-weight: 700; 
-  color: white; 
-}
-
-.header 
-.close { 
-  position: absolute; 
-  top: 1rem; 
-  right: 1rem; 
   color: white; 
 }
 
