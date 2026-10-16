@@ -25,6 +25,7 @@ const reviewSchema = new mongoose.Schema<ReviewData>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Booking",
       required: true,
+      unique: true,
     },
     rating: {
       type: Number,

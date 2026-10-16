@@ -6,7 +6,11 @@ import config from "./utils/config";
 import logger from "./utils/logger";
 import middleware from "./utils/middleware";
 import authRouter from "./controllers/auth";
-import walkersRouter from "./controllers/walkers";
+import walkersRouter from "./controllers/walker";
+import petsRouter from "./controllers/pet";
+import bookingsRouter from "./controllers/booking";
+import reviewsRouter from "./controllers/review";
+import usersRouter from "./controllers/user";
 
 const app = express();
 
@@ -34,6 +38,10 @@ app.use(middleware.requestLogger);
 
 app.use("/auth", authRouter);
 app.use("/walkers", walkersRouter);
+app.use("/pets", petsRouter);
+app.use("/bookings", bookingsRouter);
+app.use("/reviews", reviewsRouter);
+app.use("/users", usersRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);

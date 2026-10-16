@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export type BookingStatus = "pending" | "accepted" | "rejected" | "completed";
+export type BookingStatus = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
 
 export interface BookingData {
   id: string;
@@ -62,7 +62,7 @@ const bookingSchema = new mongoose.Schema<BookingData>(
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "rejected", "completed"],
+      enum: ["pending", "accepted", "rejected", "completed", "cancelled"],
       default: "pending",
     },
   },
