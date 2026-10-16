@@ -7,7 +7,7 @@ export interface Resena {
 }
 
 export interface PaseadorData {
-  id: number;
+  id: string;
   nombre: string;
   comuna: string;
   tarifa: number;

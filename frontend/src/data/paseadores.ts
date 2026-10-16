@@ -2,7 +2,7 @@ import type { PaseadorData } from "../types/data";
 
 export const paseadores: PaseadorData[] = [
   {
-    id: 1,
+    id: "1",
     nombre: "Carlos Pérez",
     comuna: "Providencia",
     foto: "https://i.pravatar.cc/150?img=11",
@@ -43,7 +43,7 @@ export const paseadores: PaseadorData[] = [
     ],
   },
   {
-    id: 2,
+    id: "2",
     nombre: "Ana Soto",
     comuna: "Ñuñoa",
     foto: "https://i.pravatar.cc/150?img=31",
@@ -84,7 +84,7 @@ export const paseadores: PaseadorData[] = [
     ],
   },
   {
-    id: 3,
+    id: "3",
     nombre: "Diego Morales",
     comuna: "Quilicura",
     tarifa: 4500,
@@ -124,7 +124,7 @@ export const paseadores: PaseadorData[] = [
     ],
   },
   {
-    id: 4,
+    id: "4",
     nombre: "Valentina Castro",
     comuna: "Providencia",
     tarifa: 5500,
@@ -165,7 +165,7 @@ export const paseadores: PaseadorData[] = [
     ],
   },
   {
-    id: 5,
+    id: "5",
     nombre: "Javier Muñoz",
     comuna: "Santiago Centro",
     tarifa: 8000,
@@ -206,7 +206,7 @@ export const paseadores: PaseadorData[] = [
     ],
   },
   {
-    id: 6,
+    id: "6",
     nombre: "Laura Rojas",
     comuna: "Las Condes",
     tarifa: 12000,
@@ -239,7 +239,7 @@ export const paseadores: PaseadorData[] = [
     ],
   },
   {
-    id: 7,
+    id: "7",
     nombre: "Felipe Ibáñez",
     comuna: "Las Condes",
     tarifa: 15000,

@@ -1,20 +1,49 @@
-import { Avatar, Badge, Button, Container, Group, List, Paper, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { Avatar, Badge, Button, Center, Container, Group, List, Loader, Paper, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { Link, useParams } from "react-router-dom";
-import { paseadores } from "../../data/paseadores";
+import type { PaseadorData } from "../../types/data";
 import classes from "./PaseadorPerfil.module.css";
+import { useEffect, useState } from "react";
+import walkerService from "../../services/walkers";
 
 const listProps = { listStyleType: "none", spacing: "xs", classNames: { item: classes.caja } } as const;
 
 const PaseadorPerfil = () => {
   const { id } = useParams<{ id: string }>();
-  const paseador = paseadores.find((paseador) => String(paseador.id) === id);
+  const [paseador, setPaseador] = useState<PaseadorData | null>(null);
+  const [cargando, setCargando] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (!id) return;
+
+    setCargando(true);
+    walkerService
+      .getById(id)
+      .then((data) => {
+        setPaseador(data);
+        setCargando(false);
+      })
+      .catch((err) => {
+        console.error("Error al obtener detalle del paseador:", err);
+        setError("No se pudo encontrar la información del paseador.");
+        setCargando(false);
+      });
+  }, [id]);
 
   return (
     <Container component="main" size={650} py={36}>
       <Button component={Link} to="/" variant="subtle" mb="md">
         Volver a paseadores
       </Button>
-      {paseador ? (
+      {cargando ? (
+        <Center py="xl">
+          <Loader color="blue" />
+        </Center>
+      ) : error || !paseador ? (
+        <Text ta="center" c="dimmed">
+          { error || "Paseador no encontrado" }
+        </Text>
+      ) : (
         <Paper radius={16} className={classes.perfil}>
           <Group component="header" className={classes.header}>
             <Avatar src={paseador.foto} alt={`Foto de ${paseador.nombre}`} size={80} variant="white" color="#0d47a1">
@@ -84,8 +113,6 @@ const PaseadorPerfil = () => {
             </section>
           </Stack>
         </Paper>
-      ) : (
-        <Text ta="center">Paseador no encontrado</Text>
       )}
     </Container>
   );
