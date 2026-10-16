@@ -26,5 +26,6 @@ Levantar el servidor local de datos:
 ```bash
 cd backend
 npm install
+npm run seed
 npm run server
 ```
