@@ -21,8 +21,8 @@
 }
 
 .contador {
-  --badge-bg: #eff6ff;
-  --badge-color: #00ff00;
+  --badge-bg: #ecfdf5;
+  --badge-color: #15803d;
   --badge-height: auto;
   padding: 4px 10px;
   font-size: 0.85rem;

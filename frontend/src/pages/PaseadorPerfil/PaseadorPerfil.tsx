@@ -31,7 +31,7 @@ const PaseadorPerfil = () => {
   }, [id]);
 
   return (
-    <Container component="main" size={650} py={36}>
+    <Container component="main" size={1200} py={36}>
       <Button component={Link} to="/" variant="subtle" mb="md">
         Volver a paseadores
       </Button>
@@ -64,7 +64,7 @@ const PaseadorPerfil = () => {
           <Stack gap="xl" p="xl" className={classes.body}>
             <Text className={classes.descripcion}>"{paseador.descripcion}"</Text>
 
-            <SimpleGrid cols={{ base: 1, xs: 2 }}>
+            <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
               <section>
                 <h3>Disponibilidad</h3>
                 <List {...listProps}>
@@ -82,15 +82,15 @@ const PaseadorPerfil = () => {
                   ))}
                 </List>
               </section>
-            </SimpleGrid>
 
-            <section>
-              <h3>Contacto Directo</h3>
-              <Paper className={`${classes.caja} ${classes.contacto}`}>
-                <p><b>Teléfono:</b> {paseador.contacto.telefono}</p>
-                <p><b>Email:</b> {paseador.contacto.email}</p>
-              </Paper>
-            </section>
+              <section>
+                <h3>Contacto Directo</h3>
+                <Paper className={`${classes.caja} ${classes.contacto}`}>
+                  <p><b>Teléfono:</b> {paseador.contacto.telefono}</p>
+                  <p><b>Email:</b> {paseador.contacto.email}</p>
+                </Paper>
+              </section>
+            </SimpleGrid>
 
             <section>
               <h3>💬 Reseñas de clientes ({paseador.resenas.length})</h3>
