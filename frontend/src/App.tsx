@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 import { Badge, Center, Container, Group, Loader, Paper, Text, Title } from "@mantine/core";
-import type { PaseadorData } from "./types/data";
+import type { PaseadorData, UsuarioData } from "./types/data";
 import walkerService from "./services/walkers";
-import { Route, Routes } from "react-router-dom";
+import authService from "./services/auth";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
 import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
+import Login from "./pages/Login/Login";
+import Registro from "./pages/Registro/Registro";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
-import { Navbar }  from "./components/Navbar";
+import { Navbar } from "./components/Navbar";
 import classes from "./App.module.css";
 
 const App = () => {
+  const [usuario, setUsuario] = useState<UsuarioData | null>(null);
   const [paseadores, setPaseadores] = useState<PaseadorData[]>([]);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,8 +24,13 @@ const App = () => {
     calificacionMinima: 0,
     tarifaMax: 20000,
   });
-  
+
   useEffect(() => {
+    authService
+      .getMe()
+      .then((user) => setUsuario(user))
+      .catch(() => setUsuario(null));
+
     walkerService
       .getAll()
       .then((data) => {
@@ -35,10 +44,14 @@ const App = () => {
       });
   }, []);
 
+  const handleLogout = async () => {
+    await authService.logout();
+    setUsuario(null);
+  };
+
   const handleFiltroChange = (campo: keyof FiltrosState, valor: string | number) => {
     setFiltros((prev) => ({ ...prev, [campo]: valor }));
   };
-
 
   const paseadoresAMostrar = paseadores.filter((paseador) => {
     const coincideComuna = filtros.comuna === "Todas" || paseador.comuna === filtros.comuna;
@@ -54,46 +67,54 @@ const App = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar usuario={usuario} onLogout={handleLogout} />
       <Routes>
-        <Route path="/" element={
-          <Container component="main" size={1200} className={classes.main}>
-            <FiltrosPaseadores filtros={filtros} onFiltroChange={handleFiltroChange} />
+        <Route
+          path="/"
+          element={
+            <Container component="main" size={1200} className={classes.main}>
+              <FiltrosPaseadores filtros={filtros} onFiltroChange={handleFiltroChange} />
 
-            <Paper component="section" className={classes.panel}>
-              <Group justify="space-between" className={classes.header}>
-                <Title order={2} className={classes.titulo}>
-                  Paseadores disponibles
-                </Title>
-                <Badge className={classes.contador}>{paseadoresAMostrar.length} disponibles</Badge>
-              </Group>
+              <Paper component="section" className={classes.panel}>
+                <Group justify="space-between" className={classes.header}>
+                  <Title order={2} className={classes.titulo}>
+                    Paseadores disponibles
+                  </Title>
+                  <Badge className={classes.contador}>{paseadoresAMostrar.length} disponibles</Badge>
+                </Group>
 
-              {cargando ? (
-                <Center py="xl">
-                  <Loader color="blue" />
-                </Center>
-              ) : error ? (
-                <Text ta="center" c="red" py="md">
-                  {error}
-                </Text>
-              ) : paseadoresAMostrar.length > 0 ? (
-                <div className={classes.grid}>
-                  {paseadoresAMostrar.map((paseador) => (
-                    <PaseadorCard
-                      key={paseador.id}
-                      paseador={paseador}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <Text ta="center" c="dimmed">
-                  No se encontraron paseadores con esos filtros.
-                </Text>
-              )}
-            </Paper>
-          </Container>
-        } />
+                {cargando ? (
+                  <Center py="xl">
+                    <Loader color="blue" />
+                  </Center>
+                ) : error ? (
+                  <Text ta="center" c="red" py="md">
+                    {error}
+                  </Text>
+                ) : paseadoresAMostrar.length > 0 ? (
+                  <div className={classes.grid}>
+                    {paseadoresAMostrar.map((paseador) => (
+                      <PaseadorCard key={paseador.id} paseador={paseador} />
+                    ))}
+                  </div>
+                ) : (
+                  <Text ta="center" c="dimmed">
+                    No se encontraron paseadores con esos filtros.
+                  </Text>
+                )}
+              </Paper>
+            </Container>
+          }
+        />
         <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
+        <Route
+          path="/login"
+          element={usuario ? <Navigate to="/" /> : <Login onLoginSuccess={setUsuario} />}
+        />
+        <Route
+          path="/registro"
+          element={usuario ? <Navigate to="/" /> : <Registro onLoginSuccess={setUsuario} />}
+        />
       </Routes>
     </>
   );
