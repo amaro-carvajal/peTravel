@@ -1,5 +1,5 @@
 export interface Resena {
-  id: number;
+  id: number | string;
   autor: string;
   puntaje: number;
   comentario: string;
@@ -21,4 +21,37 @@ export interface PaseadorData {
     email: string;
   };
   resenas: Resena[];
+}
+
+export interface UsuarioData {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: 'owner' | 'walker';
+}
+
+export interface MascotaData {
+  id: string;
+  nombre: string;
+  raza: string;
+  tamano: 'small' | 'medium' | 'large';
+  notas?: string;
+}
+
+export interface NuevaMascotaData {
+  nombre: string;
+  raza: string;
+  tamano: 'small' | 'medium' | 'large';
+  notas?: string;
+}
+
+export interface NuevaReservaData {
+  mascotaId: string;
+  paseadorId: string;
+  fecha: string;
+  horaInicio: string;
+  duracionMinutos: number;
+  direccionRetiro: string;
+  notas?: string;
+  precioTotal: number;
 }
