@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { PaseadorData } from '../types/data';
+import type { PaseadorData, Resena } from '../types/data';
 
 const baseUrl = '/walkers';
 
@@ -38,7 +38,7 @@ const formatDays = (days: string[]): string => {
   return `${translated.slice(0, -1).join(', ')} y ${translated[translated.length - 1]}`;
 };
 
-const adaptWalker = (backendWalker: any): PaseadorData => ({
+const adaptWalker = (backendWalker: any, resenas: Resena[]=[]): PaseadorData => ({
   id: backendWalker.id,
   nombre: backendWalker.name,
   comuna: backendWalker.coverageAreas?.[0] || 'Sin comuna',
@@ -54,17 +54,40 @@ const adaptWalker = (backendWalker: any): PaseadorData => ({
     telefono: backendWalker.phone,
     email: backendWalker.email,
   },
-  resenas: [],
+  resenas,
 });
 
 const getAll = async (): Promise<PaseadorData[]> => {
   const response = await axios.get(baseUrl);
-  return response.data.map(adaptWalker);
+  return response.data.map((walker: any) => adaptWalker(walker));
 };
 
 const getById = async (id: string): Promise<PaseadorData> => {
-  const response = await axios.get(`${baseUrl}/${id}`);
-  return adaptWalker(response.data);
+  const [walkerRes, reviewsRes] = await Promise.all([
+    axios.get(`${baseUrl}/${id}`),
+    axios.get(`/reviews?walker=${id}`).catch(() => ({ data: [] })),
+  ]);
+  let usuariosMap: Record<string, string> = {};
+
+  if (reviewsRes.data.length > 0) {
+    try {
+      const usersRes = await axios.get('/users');
+      usuariosMap = Object.fromEntries(
+        usersRes.data.map((u: any) => [u.id, u.name])
+      );
+    } catch {
+      usuariosMap = {};
+    }
+  }
+  const resenasAdaptadas: Resena[] = reviewsRes.data.map((r: any) => ({
+    id: r.id,
+    autor: usuariosMap[r.author] || 'Cliente verificado',
+    puntaje: r.rating,
+    comentario: r.comment,
+    fecha: r.createdAt ? new Date(r.createdAt).toISOString().split('T')[0] : 'Reciente',
+  }));
+
+  return adaptWalker(walkerRes.data, resenasAdaptadas);
 };
 
 export default { getAll, getById };

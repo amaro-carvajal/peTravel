@@ -24,7 +24,6 @@ export interface PaseadorData {
 }
 
 export type RolUsuario = "owner" | "walker";
-
 export interface UsuarioData {
   id: string;
   nombre: string;
