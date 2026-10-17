@@ -23,11 +23,13 @@ export interface PaseadorData {
   resenas: Resena[];
 }
 
+export type RolUsuario = "owner" | "walker";
+
 export interface UsuarioData {
   id: string;
   nombre: string;
   email: string;
-  rol: 'owner' | 'walker';
+  rol: RolUsuario;
 }
 
 export interface MascotaData {
