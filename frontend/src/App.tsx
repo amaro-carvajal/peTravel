@@ -113,7 +113,7 @@ const App = () => {
           }
         />
         <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
-        <Route path="/mi-perfil" element={<MiPerfil />} />
+        <Route path="/mi-perfil" element={<MiPerfil usuario={usuario} />} />
         <Route
           path="/login"
           element={usuario ? <Navigate to="/" /> : <Login onLoginSuccess={setUsuario} />}

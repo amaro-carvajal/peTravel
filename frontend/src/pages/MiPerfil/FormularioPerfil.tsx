@@ -14,9 +14,11 @@ import {
 } from "@mantine/core";
 import { useState, type SubmitEvent } from "react";
 import walkerService from "../../services/walkers";
+import type { UsuarioData } from "../../types/data";
 import classes from "./FormularioPerfil.module.css";
 
 interface FormularioPerfilProps {
+  usuario: UsuarioData | null;
   onCreado: (id: string) => void;
 }
 
@@ -30,7 +32,6 @@ const DIAS = [
   { value: "sunday", label: "Domingo" },
 ];
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const HORA_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 interface HorarioDia {
@@ -43,13 +44,11 @@ const HORARIOS_INICIALES: Record<string, HorarioDia> = Object.fromEntries(
   DIAS.map((dia) => [dia.value, { activo: false, inicio: "09:00", fin: "13:00" }])
 );
 
-const FormularioPerfil = ({ onCreado }: FormularioPerfilProps) => {
-  const [nombre, setNombre] = useState("");
+const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
   const [descripcion, setDescripcion] = useState("");
   const [zonas, setZonas] = useState<string[]>([]);
   const [tarifa, setTarifa] = useState<number | string>("");
   const [telefono, setTelefono] = useState("");
-  const [email, setEmail] = useState("");
   const [foto, setFoto] = useState("");
   const [horarios, setHorarios] = useState<Record<string, HorarioDia>>(HORARIOS_INICIALES);
   const [error, setError] = useState<string | null>(null);
@@ -73,8 +72,8 @@ const FormularioPerfil = ({ onCreado }: FormularioPerfilProps) => {
     e.preventDefault();
     setError(null);
 
-    if (nombre.trim().length < 2) {
-      setError("El nombre debe tener al menos 2 caracteres.");
+    if (!usuario) {
+      setError("Debes iniciar sesión para crear tu perfil.");
       return;
     }
 
@@ -97,11 +96,6 @@ const FormularioPerfil = ({ onCreado }: FormularioPerfilProps) => {
 
     if (telefono.trim().length === 0) {
       setError("El teléfono es obligatorio.");
-      return;
-    }
-
-    if (!EMAIL_REGEX.test(email)) {
-      setError("El correo es inválido.");
       return;
     }
 
@@ -132,12 +126,12 @@ const FormularioPerfil = ({ onCreado }: FormularioPerfilProps) => {
 
     try {
       const creado = await walkerService.create({
-        name: nombre.trim(),
+        name: usuario.nombre,
         description: descripcion.trim(),
         coverageAreas: zonas,
         hourlyRate: tarifaNumero,
         phone: telefono.trim(),
-        email: email.trim().toLowerCase(),
+        email: usuario.email,
         photo: foto.trim() || undefined,
         availability: availability.length > 0 ? availability : undefined,
       });
@@ -165,13 +159,14 @@ const FormularioPerfil = ({ onCreado }: FormularioPerfilProps) => {
           <Stack gap="md">
             {error && <div className={classes.errorBox}>{error}</div>}
 
-            <TextInput
-              label="Nombre visible"
-              placeholder="Ej. Camila Rojas"
-              required
-              value={nombre}
-              onChange={(e) => setNombre(e.currentTarget.value)}
-            />
+            <Paper className={classes.cuenta}>
+              <Text size="sm" c="dimmed">
+                Se usarán los datos de tu cuenta:
+              </Text>
+              <Text size="sm">
+                <b>{usuario?.nombre}</b> · {usuario?.email}
+              </Text>
+            </Paper>
 
             <Textarea
               label="Descripción"
@@ -207,15 +202,6 @@ const FormularioPerfil = ({ onCreado }: FormularioPerfilProps) => {
               required
               value={telefono}
               onChange={(e) => setTelefono(e.currentTarget.value)}
-            />
-
-            <TextInput
-              label="Correo de contacto"
-              placeholder="tu@correo.cl"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.currentTarget.value)}
             />
 
             <TextInput

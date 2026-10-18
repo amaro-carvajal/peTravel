@@ -1,10 +1,15 @@
 import { Center, Container, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import walkerService from "../../services/walkers";
+import type { UsuarioData } from "../../types/data";
 import PaseadorPerfil from "../PaseadorPerfil/PaseadorPerfil";
 import FormularioPerfil from "./FormularioPerfil";
 
-const MiPerfil = () => {
+interface MiPerfilProps {
+  usuario: UsuarioData | null;
+}
+
+const MiPerfil = ({ usuario }: MiPerfilProps) => {
   const [walkerId, setWalkerId] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +52,7 @@ const MiPerfil = () => {
     return <PaseadorPerfil id={walkerId} />;
   }
 
-  return <FormularioPerfil onCreado={setWalkerId} />;
+  return <FormularioPerfil usuario={usuario} onCreado={setWalkerId} />;
 };
 
 export default MiPerfil;
