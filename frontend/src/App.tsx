@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Badge, Button, Center, Container, Group, Loader, Paper, Text, Title } from "@mantine/core";
-import type { PaseadorData, UsuarioData } from "./types/data";
+import type { MascotaData, PaseadorData, UsuarioData } from "./types/data";
 import walkerService from "./services/walkers";
 import authService from "./services/auth";
-import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import petService from "./services/pets";
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
 import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
 import MiPerfil from "./pages/MiPerfil/MiPerfil";
+import MisMascotas from "./pages/MisMascotas/MisMascotas";
 import Login from "./pages/Login/Login";
 import Registro from "./pages/Registro/Registro";
 import GestionPaseos from "./pages/GestionPaseos/GestionPaseos";
@@ -18,8 +20,11 @@ import classes from "./App.module.css";
 
 const App = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [usuario, setUsuario] = useState<UsuarioData | null>(null);
   const [autenticando, setAutenticando] = useState<boolean>(true);
+  const [misMascotas, setMisMascotas] = useState<MascotaData[]>([]);
+  const [estadoMascotas, setEstadoMascotas] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [paseadores, setPaseadores] = useState<PaseadorData[]>([]);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +43,41 @@ const App = () => {
       .catch(() => setUsuario(null))
       .finally(() => setAutenticando(false));
   }, []);
+
+  useEffect(() => {
+    if (autenticando) return;
+
+    if (!usuario || usuario.rol !== "owner") {
+      setMisMascotas([]);
+      setEstadoMascotas("idle");
+      return;
+    }
+
+    let cancelado = false;
+    setEstadoMascotas("loading");
+
+    petService
+      .getAll()
+      .then((mascotas) => {
+        if (cancelado) return;
+        setMisMascotas(mascotas);
+        setEstadoMascotas("loaded");
+      })
+      .catch(() => {
+        if (cancelado) return;
+        setEstadoMascotas("error");
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [autenticando, usuario]);
+
+  const handleMascotaRegistrada = (mascota: MascotaData) => {
+    setMisMascotas((actuales) => [...actuales, mascota]);
+    setEstadoMascotas("loaded");
+    navigate("/mis-mascotas", { state: { mascotaRegistrada: mascota.nombre } });
+  };
 
   useEffect(() => {
     if (location.pathname !== "/") return;
@@ -84,7 +124,11 @@ const App = () => {
           path="/"
           element={
             <Container component="main" size={1200} className={classes.main}>
-              {(!usuario || usuario.rol === "owner") && (
+              {!autenticando &&
+                (!usuario ||
+                  (usuario.rol === "owner" &&
+                    estadoMascotas === "loaded" &&
+                    misMascotas.length === 0)) && (
                 <Paper className={classes.mascotaBanner}>
                   <Group justify="space-between" align="center">
                     <div>
@@ -157,10 +201,28 @@ const App = () => {
         <Route
           path="/mascotas/nueva"
           element={
-            usuario && usuario.rol === "owner" ? (
-              <RegistrarMascota />
+            autenticando ? (
+              <Center py="xl">
+                <Loader color="blue" />
+              </Center>
+            ) : usuario?.rol === "owner" ? (
+              <RegistrarMascota onMascotaRegistrada={handleMascotaRegistrada} />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to={usuario ? "/" : "/login"} />
+            )
+          }
+        />
+        <Route
+          path="/mis-mascotas"
+          element={
+            autenticando ? (
+              <Center py="xl">
+                <Loader color="blue" />
+              </Center>
+            ) : usuario?.rol === "owner" ? (
+              <MisMascotas />
+            ) : (
+              <Navigate to={usuario ? "/" : "/login"} />
             )
           }
         />

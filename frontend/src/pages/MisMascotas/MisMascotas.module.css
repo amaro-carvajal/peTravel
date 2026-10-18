@@ -1,0 +1,38 @@
+.wrapper {
+  margin: 36px auto;
+}
+
+.panel {
+  padding: 28px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.06);
+}
+
+.header {
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.titulo {
+  margin-bottom: 4px;
+  color: #1e3a8a;
+}
+
+.mascotaCard {
+  min-height: 120px;
+  padding: 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.nombre {
+  color: #1e3a8a;
+  font-weight: 700;
+}
+
+.notas {
+  color: #475569;
+}

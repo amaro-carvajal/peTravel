@@ -31,29 +31,6 @@
   font-size: 0.9rem;
 }
 
-.successBox {
-  padding: 10px 14px;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  border-radius: 8px;
-  color: #047857;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.mascotasList {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.mascotaItem {
-  padding: 10px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-}
-
 .volver {
   font-weight: 600;
   border: 1px solid #bfdbfe;

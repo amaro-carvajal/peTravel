@@ -1,10 +1,8 @@
-import { useEffect, useState, type SubmitEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import axios from "axios";
 import {
-  Badge,
   Button,
   Container,
-  Group,
   NativeSelect,
   Paper,
   Stack,
@@ -13,7 +11,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import petService from "../../services/pets";
 import type { MascotaData } from "../../types/data";
 import classes from "./RegistrarMascota.module.css";
@@ -26,14 +24,11 @@ const TAMANOS: { value: TamanoMascota; label: string }[] = [
   { value: "large", label: "Grande (ej. Pastor Alemán, Golden Retriever)" },
 ];
 
-const ETIQUETA_TAMANO: Record<TamanoMascota, string> = {
-  small: "Pequeño",
-  medium: "Mediano",
-  large: "Grande",
-};
+interface RegistrarMascotaProps {
+  onMascotaRegistrada: (mascota: MascotaData) => void;
+}
 
-const RegistrarMascota = () => {
-  const navigate = useNavigate();
+const RegistrarMascota = ({ onMascotaRegistrada }: RegistrarMascotaProps) => {
   const [searchParams] = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
 
@@ -42,22 +37,12 @@ const RegistrarMascota = () => {
   const [tamano, setTamano] = useState<TamanoMascota>("medium");
   const [notas, setNotas] = useState("");
 
-  const [misMascotas, setMisMascotas] = useState<MascotaData[]>([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [exito, setExito] = useState<string | null>(null);
-
-  useEffect(() => {
-    petService
-      .getAll()
-      .then((data) => setMisMascotas(data))
-      .catch(() => setMisMascotas([]));
-  }, []);
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setExito(null);
 
     if (!nombre.trim() || !raza.trim()) {
       setError("El nombre y la raza son obligatorios.");
@@ -79,17 +64,7 @@ const RegistrarMascota = () => {
         notas,
       });
 
-      if (redirectUrl) {
-        navigate(redirectUrl);
-        return;
-      }
-
-      setMisMascotas((prev) => [...prev, nueva]);
-      setNombre("");
-      setRaza("");
-      setTamano("medium");
-      setNotas("");
-      setExito(`¡${nueva.nombre} fue registrado correctamente!`);
+      onMascotaRegistrada(nueva);
     } catch (err: unknown) {
       const mensaje =
         (axios.isAxiosError<{ error: string }>(err) && err.response?.data?.error) ||
@@ -104,7 +79,7 @@ const RegistrarMascota = () => {
     <Container size={1200} className={classes.wrapper}>
       <Button
         component={Link}
-        to={redirectUrl || "/"}
+        to={redirectUrl || "/mis-mascotas"}
         variant="light"
         color="blue"
         radius="xl"
@@ -112,7 +87,7 @@ const RegistrarMascota = () => {
         mb="md"
         className={classes.volver}
       >
-        {redirectUrl ? "Volver al agendamiento" : "Volver a paseadores"}
+        {redirectUrl ? "Volver al agendamiento" : "Volver a mis mascotas"}
       </Button>
 
       <Paper className={classes.card}>
@@ -126,7 +101,6 @@ const RegistrarMascota = () => {
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
             {error && <div className={classes.errorBox}>{error}</div>}
-            {exito && <div className={classes.successBox}>{exito}</div>}
 
             <TextInput
               label="Nombre de la mascota"
@@ -166,31 +140,6 @@ const RegistrarMascota = () => {
             </Button>
           </Stack>
         </form>
-
-        {misMascotas.length > 0 && (
-          <div className={classes.mascotasList}>
-            <Text fw={700} size="sm" c="#1e3a8a" mb="xs">
-              Tus mascotas registradas ({misMascotas.length})
-            </Text>
-            <Stack gap="xs">
-              {misMascotas.map((m) => (
-                <div key={m.id} className={classes.mascotaItem}>
-                  <Group justify="space-between">
-                    <Text fw={600} size="sm">
-                      🐾 {m.nombre}{" "}
-                      <Text span c="dimmed" fw={400}>
-                        ({m.raza})
-                      </Text>
-                    </Text>
-                    <Badge variant="light" color="blue">
-                      {ETIQUETA_TAMANO[m.tamano]}
-                    </Badge>
-                  </Group>
-                </div>
-              ))}
-            </Stack>
-          </div>
-        )}
       </Paper>
     </Container>
   );
