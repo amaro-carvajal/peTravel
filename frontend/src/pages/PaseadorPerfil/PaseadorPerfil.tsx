@@ -1,6 +1,6 @@
 import { Avatar, Badge, Button, Center, Container, Group, List, Loader, Paper, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { Link, useParams } from "react-router-dom";
-import type { PaseadorData } from "../../types/data";
+import type { PaseadorData, UsuarioData } from "../../types/data";
 import classes from "./PaseadorPerfil.module.css";
 import { useEffect, useState } from "react";
 import walkerService from "../../services/walkers";
@@ -9,9 +9,10 @@ const listProps = { listStyleType: "none", spacing: "xs", classNames: { item: cl
 
 interface PaseadorPerfilProps {
   id?: string;
+  usuario?: UsuarioData | null;
 }
 
-const PaseadorPerfil = ({ id: idProp }: PaseadorPerfilProps = {}) => {
+const PaseadorPerfil = ({ id: idProp, usuario }: PaseadorPerfilProps = {}) => {
   const { id: idParam } = useParams<{ id: string }>();
   const id = idProp ?? idParam;
   const [paseador, setPaseador] = useState<PaseadorData | null>(null);
@@ -75,6 +76,14 @@ const PaseadorPerfil = ({ id: idProp }: PaseadorPerfilProps = {}) => {
           </Group>
 
           <Stack gap="xl" p="xl" className={classes.body}>
+            {usuario?.rol !== "walker" && (
+              <Group justify="flex-end">
+                <Button component={Link} to={`/paseadores/${paseador.id}/agendar`}>
+                  Agendar paseo
+                </Button>
+              </Group>
+            )}
+
             <Text className={classes.descripcion}>"{paseador.descripcion}"</Text>
 
             <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">

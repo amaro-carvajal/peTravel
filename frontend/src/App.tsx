@@ -13,6 +13,7 @@ import Login from "./pages/Login/Login";
 import Registro from "./pages/Registro/Registro";
 import GestionPaseos from "./pages/GestionPaseos/GestionPaseos";
 import FormularioResena from "./pages/FormularioResena/FormularioResena";
+import AgendarPaseo from "./pages/AgendarPaseo/AgendarPaseo";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
 import RegistrarMascota from "./pages/RegistrarMascota/RegistrarMascota";
 import { Navbar } from "./components/Navbar";
@@ -174,7 +175,7 @@ const App = () => {
                 ) : paseadoresAMostrar.length > 0 ? (
                   <div className={classes.grid}>
                     {paseadoresAMostrar.map((paseador) => (
-                      <PaseadorCard key={paseador.id} paseador={paseador} />
+                      <PaseadorCard key={paseador.id} paseador={paseador} usuario={usuario} />
                     ))}
                   </div>
                 ) : (
@@ -186,7 +187,21 @@ const App = () => {
             </Container>
           }
         />
-        <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
+        <Route
+          path="/paseadores/:id/agendar"
+          element={
+            autenticando ? (
+              <Center py="xl">
+                <Loader color="blue" />
+              </Center>
+            ) : usuario?.rol === "owner" ? (
+              <AgendarPaseo />
+            ) : (
+              <Navigate to={usuario ? "/" : "/login"} replace />
+            )
+          }
+        />
+        <Route path="/paseadores/:id" element={<PaseadorPerfil usuario={usuario} />} />
         <Route
           path="/mi-perfil"
           element={

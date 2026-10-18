@@ -1,13 +1,14 @@
-import { Avatar, Badge, Button, Card, Group } from "@mantine/core";
+import { Avatar, Badge, Button, Card, Group, Stack } from "@mantine/core";
 import { Link } from "react-router-dom";
-import type { PaseadorData } from "../../types/data";
+import type { PaseadorData, UsuarioData } from "../../types/data";
 import classes from "./PaseadorCard.module.css";
 
 interface PaseadorCardProps {
   paseador: PaseadorData;
+  usuario?: UsuarioData | null;
 }
 
-const PaseadorCard = ({ paseador }: PaseadorCardProps) => (
+const PaseadorCard = ({ paseador, usuario }: PaseadorCardProps) => (
   <Card className={classes.card}>
     <Group wrap="nowrap">
       <Avatar src={paseador.foto} alt={paseador.nombre} size={50}>
@@ -30,9 +31,28 @@ const PaseadorCard = ({ paseador }: PaseadorCardProps) => (
 
     <p>"{paseador.descripcion}"</p>
 
-    <Button fullWidth component={Link} to={`/paseadores/${paseador.id}`}>
-      Ver perfil
-    </Button>
+    <Stack gap="xs">
+      <Button
+        fullWidth
+        component={Link}
+        to={`/paseadores/${paseador.id}`}
+        variant="outline"
+        color="dark"
+        className={classes.verPerfil}
+      >
+        Ver perfil
+      </Button>
+      {usuario?.rol !== "walker" && (
+        <Button
+          fullWidth
+          component={Link}
+          to={`/paseadores/${paseador.id}/agendar`}
+          className={classes.agendar}
+        >
+          Agendar paseo
+        </Button>
+      )}
+    </Stack>
   </Card>
 );
 

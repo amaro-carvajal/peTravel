@@ -37,13 +37,27 @@
     border: 2px solid #bfdbfe;
   }
 
-  & button {
-    --button-bg: #1455b5;
-    --button-hover: #2b65bc;
-    --button-radius: 4px;
-  }
 }
 
 .badges > * {
   text-transform: none;
+}
+
+.verPerfil {
+  --button-bg: #ffffff;
+  --button-color: #111827;
+  --button-bd: #111827;
+  --button-hover: #111827;
+  --button-hover-color: #ffffff;
+  --button-hover-bd: #111827;
+  --button-radius: 6px;
+  font-weight: 600;
+}
+
+.agendar {
+  --button-bg: #1455b5;
+  --button-color: #ffffff;
+  --button-hover: #2b65bc;
+  --button-radius: 6px;
+  font-weight: 600;
 }

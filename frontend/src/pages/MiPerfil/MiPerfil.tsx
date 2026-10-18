@@ -50,7 +50,7 @@ const MiPerfil = ({ usuario }: MiPerfilProps) => {
   }
 
   if (walkerId) {
-    return <PaseadorPerfil id={walkerId} />;
+    return <PaseadorPerfil id={walkerId} usuario={usuario} />;
   }
 
   return <FormularioPerfil usuario={usuario} onCreado={setWalkerId} />;
