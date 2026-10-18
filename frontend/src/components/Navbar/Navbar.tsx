@@ -30,6 +30,17 @@ const Navbar = ({ usuario, onLogout }: NavbarProps) => (
               {usuario.rol === "owner" ? "Dueño" : "Paseador"}
             </Badge>
             <Text className={classes.userInfo}>{usuario.nombre}</Text>
+
+            <Button
+              component={Link}
+              to="/mis-paseos"
+              variant="subtle"
+              color="gray.0"
+              size="sm"
+            > 
+              Mis paseos
+            </Button>
+
             {usuario.rol === "walker" && (
               <Button
                 component={Link}
