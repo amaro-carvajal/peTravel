@@ -30,3 +30,11 @@
   color: #dc2626;
   font-size: 0.9rem;
 }
+
+.cuenta {
+  padding: 12px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  color: #1e3a8a;
+}
