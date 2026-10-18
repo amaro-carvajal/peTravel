@@ -7,8 +7,13 @@ import walkerService from "../../services/walkers";
 
 const listProps = { listStyleType: "none", spacing: "xs", classNames: { item: classes.caja } } as const;
 
-const PaseadorPerfil = () => {
-  const { id } = useParams<{ id: string }>();
+interface PaseadorPerfilProps {
+  id?: string;
+}
+
+const PaseadorPerfil = ({ id: idProp }: PaseadorPerfilProps = {}) => {
+  const { id: idParam } = useParams<{ id: string }>();
+  const id = idProp ?? idParam;
   const [paseador, setPaseador] = useState<PaseadorData | null>(null);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,14 +21,13 @@ const PaseadorPerfil = () => {
   useEffect(() => {
     if (!id) return;
 
-    setCargando(true);
     walkerService
       .getById(id)
       .then((data) => {
         setPaseador(data);
         setCargando(false);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.error("Error al obtener detalle del paseador:", err);
         setError("No se pudo encontrar la información del paseador.");
         setCargando(false);
@@ -32,7 +36,16 @@ const PaseadorPerfil = () => {
 
   return (
     <Container component="main" size={1200} py={36}>
-      <Button component={Link} to="/" variant="subtle" mb="md">
+      <Button
+        component={Link}
+        to="/"
+        variant="light"
+        color="blue"
+        radius="xl"
+        leftSection="←"
+        mb="md"
+        className={classes.volver}
+      >
         Volver a paseadores
       </Button>
       {cargando ? (

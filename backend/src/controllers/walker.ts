@@ -58,6 +58,17 @@ router.get("/", async (request, response) => {
   response.json(walkers);
 });
 
+router.get("/me", middleware.withUser, async (request, response) => {
+  const walker = await Walker.findOne({ user: request.userId });
+
+  if (!walker) {
+    response.status(404).json({ error: "Aún no tienes un perfil de paseador" });
+    return;
+  }
+
+  response.json(walker);
+});
+
 router.get("/:id", async (request, response) => {
   const walker = await Walker.findById(request.params.id);
   if (!walker) {
