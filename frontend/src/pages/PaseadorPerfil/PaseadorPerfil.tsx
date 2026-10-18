@@ -21,14 +21,13 @@ const PaseadorPerfil = ({ id: idProp }: PaseadorPerfilProps = {}) => {
   useEffect(() => {
     if (!id) return;
 
-    setCargando(true);
     walkerService
       .getById(id)
       .then((data) => {
         setPaseador(data);
         setCargando(false);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.error("Error al obtener detalle del paseador:", err);
         setError("No se pudo encontrar la información del paseador.");
         setCargando(false);

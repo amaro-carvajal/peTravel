@@ -13,6 +13,7 @@ import {
   Title,
 } from "@mantine/core";
 import { useState, type SubmitEvent } from "react";
+import axios from "axios";
 import walkerService from "../../services/walkers";
 import classes from "./FormularioPerfil.module.css";
 
@@ -142,9 +143,10 @@ const FormularioPerfil = ({ onCreado }: FormularioPerfilProps) => {
         availability: availability.length > 0 ? availability : undefined,
       });
       onCreado(creado.id);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const mensaje =
-        err.response?.data?.error || "No se pudo crear tu perfil.";
+        (axios.isAxiosError<{ error: string }>(err) && err.response?.data?.error) ||
+        "No se pudo crear tu perfil.";
       setError(mensaje);
     } finally {
       setCargando(false);

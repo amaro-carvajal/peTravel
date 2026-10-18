@@ -1,4 +1,5 @@
 import { useState, type SubmitEvent } from "react";
+import axios from "axios";
 import { Button, Container, NativeSelect, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
 import { Link, useNavigate } from "react-router-dom";
 import authService from "../../services/auth";
@@ -44,9 +45,13 @@ const Registro = ({ onLoginSuccess }: RegistroProps) => {
       const usuarioLogueado = await authService.login(email, password);
       onLoginSuccess(usuarioLogueado);
       navigate("/");
-    } catch (err: any) {
-      const mensaje = err.response?.data?.error || "No se pudo completar el registro.";
-      setError(mensaje);
+    } catch (err: unknown) {
+      if (axios.isAxiosError<{ error: string }>(err)) {
+        const mensaje = err.response?.data?.error || "No se pudo completar el registro.";
+        setError(mensaje);
+      } else {
+        setError("No se pudo completar el registro.");
+      }
     } finally {
       setCargando(false);
     }

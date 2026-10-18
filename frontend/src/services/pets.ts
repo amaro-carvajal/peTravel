@@ -1,9 +1,9 @@
 import axios from 'axios';
-import type { MascotaData, NuevaMascotaData } from '../types/data';
+import type { BackendPet, MascotaData, NuevaMascotaData } from '../types/data';
 
 const baseUrl = '/pets';
 
-const adaptPet = (backendPet: any): MascotaData => ({
+const adaptPet = (backendPet: BackendPet): MascotaData => ({
   id: backendPet.id,
   nombre: backendPet.name,
   raza: backendPet.breed,
@@ -12,7 +12,7 @@ const adaptPet = (backendPet: any): MascotaData => ({
 });
 
 const getAll = async (): Promise<MascotaData[]> => {
-  const response = await axios.get(baseUrl);
+  const response = await axios.get<BackendPet[]>(baseUrl);
   return response.data.map(adaptPet);
 };
 
@@ -23,7 +23,7 @@ const create = async (mascota: NuevaMascotaData): Promise<MascotaData> => {
     size: mascota.tamano,
     notes: mascota.notas?.trim() ? mascota.notas.trim() : undefined,
   };
-  const response = await axios.post(baseUrl, payload);
+  const response = await axios.post<BackendPet>(baseUrl, payload);
   return adaptPet(response.data);
 };
 

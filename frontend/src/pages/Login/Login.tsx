@@ -1,4 +1,5 @@
 import { useState, type SyntheticEvent } from "react";
+import axios from "axios";
 import { Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
 import { Link, useNavigate } from "react-router-dom";
 import authService from "../../services/auth";
@@ -25,9 +26,13 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
       const usuario = await authService.login(email, password);
       onLoginSuccess(usuario);
       navigate("/");
-    } catch (err: any) {
-      const mensaje = err.response?.data?.error || "Error al iniciar sesión. Verifica tus datos.";
-      setError(mensaje);
+    } catch (err: unknown) {
+      if (axios.isAxiosError<{ error: string }>(err)) {
+        const mensaje = err.response?.data?.error || "Error al iniciar sesión. Verifica tus datos.";
+        setError(mensaje);
+      } else {
+        setError("Error al iniciar sesión. Verifica tus datos.");
+      }
     } finally {
       setCargando(false);
     }

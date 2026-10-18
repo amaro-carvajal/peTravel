@@ -1,5 +1,6 @@
 import { Center, Container, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import walkerService from "../../services/walkers";
 import PaseadorPerfil from "../PaseadorPerfil/PaseadorPerfil";
 import FormularioPerfil from "./FormularioPerfil";
@@ -16,8 +17,8 @@ const MiPerfil = () => {
         setWalkerId(data.id);
         setCargando(false);
       })
-      .catch((err) => {
-        if (err.response?.status !== 404) {
+      .catch((err: unknown) => {
+        if (!axios.isAxiosError(err) || err.response?.status !== 404) {
           console.error("Error al obtener tu perfil de paseador:", err);
           setError("No se pudo cargar tu perfil. Intenta nuevamente.");
         }

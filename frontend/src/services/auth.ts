@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { RolUsuario, UsuarioData } from '../types/data';
+import type { BackendUser, RolUsuario, UsuarioData } from '../types/data';
 
 const baseUrl = '/auth';
 const CSRF_STORAGE_KEY = 'petravel_csrf_token';
@@ -21,7 +21,7 @@ const setCsrfToken = (token: string | null) => {
   }
 };
 
-const adaptUser = (backendUser: any): UsuarioData => ({
+const adaptUser = (backendUser: BackendUser): UsuarioData => ({
   id: backendUser.id,
   nombre: backendUser.name,
   email: backendUser.email,
@@ -29,9 +29,9 @@ const adaptUser = (backendUser: any): UsuarioData => ({
 });
 
 const login = async (email: string, password: string): Promise<UsuarioData> => {
-  const response = await axios.post(`${baseUrl}/login`, { email, password });
+  const response = await axios.post<BackendUser>(`${baseUrl}/login`, { email, password });
   const csrfToken = response.headers['x-csrf-token'];
-  if (csrfToken) {
+  if (typeof csrfToken === 'string') {
     setCsrfToken(csrfToken);
   }
   return adaptUser(response.data);
@@ -43,7 +43,7 @@ const register = async (
   password: string,
   rol: RolUsuario
 ): Promise<UsuarioData> => {
-  const response = await axios.post(`${baseUrl}/register`, {
+  const response = await axios.post<BackendUser>(`${baseUrl}/register`, {
     name: nombre,
     email,
     password,
@@ -53,7 +53,7 @@ const register = async (
 };
 
 const getMe = async (): Promise<UsuarioData> => {
-  const response = await axios.get(`${baseUrl}/me`);
+  const response = await axios.get<BackendUser>(`${baseUrl}/me`);
   return adaptUser(response.data);
 };
 
