@@ -1,0 +1,92 @@
+.panel {
+  padding: 24px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.05);
+}
+
+.header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.titulo {
+  font-size: 1.25rem;
+  color: #1e3a8a;
+}
+
+.contador {
+  --badge-bg: #eff6ff;
+  --badge-color: #1d4ed8;
+  --badge-height: auto;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.tarjeta {
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.dato {
+  margin-bottom: 4px;
+  color: #475569;
+}
+
+.chip {
+  text-transform: none;
+}
+
+.subtitulo {
+  margin: 28px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 1rem;
+  color: #1e3a8a;
+}
+
+.historial {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fila {
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.estado {
+  --badge-height: auto;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.completed {
+  --badge-bg: #dcfce7;
+  --badge-color: #15803d;
+}
+
+.rejected {
+  --badge-bg: #fee2e2;
+  --badge-color: #b91c1c;
+}
+
+.accepted {
+  --badge-bg: #dbeafe;
+  --badge-color: #1d4ed8;
+}
+
+.cancelled {
+  --badge-bg: #f1f5f9;
+  --badge-color: #475569;
+}

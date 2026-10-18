@@ -9,6 +9,8 @@ import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
 import MiPerfil from "./pages/MiPerfil/MiPerfil";
 import Login from "./pages/Login/Login";
 import Registro from "./pages/Registro/Registro";
+import GestionPaseos from "./pages/GestionPaseos/GestionPaseos";
+import FormularioResena from "./pages/FormularioResena/FormularioResena";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
 import { Navbar } from "./components/Navbar";
 import classes from "./App.module.css";
@@ -122,6 +124,8 @@ const App = () => {
           path="/registro"
           element={usuario ? <Navigate to="/" /> : <Registro onLoginSuccess={setUsuario} />}
         />
+        <Route path="/mis-paseos" element={<GestionPaseos />} />
+        <Route path="/paseos/:id/resena" element={<FormularioResena />} />
       </Routes>
     </>
   );

@@ -1,0 +1,28 @@
+.tarjeta {
+  overflow: hidden;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(13, 71, 161, 0.12);
+}
+
+.header {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #0d47a1, #1e3a8a);
+  color: white;
+}
+
+.nombre {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: white;
+}
+
+.badge {
+  --badge-bg: rgba(255, 255, 255, 0.15);
+  --badge-color: white;
+  --badge-height: auto;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: none;
+}

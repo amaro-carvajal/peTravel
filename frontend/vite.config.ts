@@ -14,6 +14,10 @@ export default defineConfig({
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
+      '/bookings': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
       '/pets': {
         target: 'http://localhost:3001',
         changeOrigin: true,
@@ -22,14 +26,10 @@ export default defineConfig({
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
-        '/users': {
-          target: 'http://localhost:3001',
-          changeOrigin: true,
-        },
-        '/bookings': {
-          target: 'http://localhost:3001',
-          changeOrigin: true,
-        }
-    }
+      '/users': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
   },
 })
