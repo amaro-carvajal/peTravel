@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Badge, Center, Container, Group, Loader, Paper, Text, Title } from "@mantine/core";
+import { Badge, Button, Center, Container, Group, Loader, Paper, Text, Title } from "@mantine/core";
 import type { PaseadorData, UsuarioData } from "./types/data";
 import walkerService from "./services/walkers";
 import authService from "./services/auth";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
 import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
 import MiPerfil from "./pages/MiPerfil/MiPerfil";
@@ -12,6 +12,7 @@ import Registro from "./pages/Registro/Registro";
 import GestionPaseos from "./pages/GestionPaseos/GestionPaseos";
 import FormularioResena from "./pages/FormularioResena/FormularioResena";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
+import RegistrarMascota from "./pages/RegistrarMascota/RegistrarMascota";
 import { Navbar } from "./components/Navbar";
 import classes from "./App.module.css";
 
@@ -81,6 +82,28 @@ const App = () => {
           path="/"
           element={
             <Container component="main" size={1200} className={classes.main}>
+              {(!usuario || usuario.rol === "owner") && (
+                <Paper className={classes.mascotaBanner}>
+                  <Group justify="space-between" align="center">
+                    <div>
+                      <div className={classes.bannerTitulo}>
+                       ¿Buscas un paseo para tu perro?
+                      </div>
+                      <Text className={classes.bannerTexto}>
+                        Registra a tu mascota en tu cuenta para agendar paseos con cualquiera de nuestros paseadores.
+                      </Text>
+                    </div>
+                    <Button
+                      component={Link}
+                      to={usuario ? "/mascotas/nueva" : "/login"}
+                      size="md"
+                      color="blue"
+                    >
+                      Registrar mi mascota
+                    </Button>
+                  </Group>
+                </Paper>
+              )}
               <FiltrosPaseadores filtros={filtros} onFiltroChange={handleFiltroChange} />
 
               <Paper component="section" className={classes.panel}>
@@ -116,6 +139,16 @@ const App = () => {
         />
         <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
         <Route path="/mi-perfil" element={<MiPerfil usuario={usuario} />} />
+        <Route
+          path="/mascotas/nueva"
+          element={
+            usuario && usuario.rol === "owner" ? (
+              <RegistrarMascota />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
         <Route
           path="/login"
           element={usuario ? <Navigate to="/" /> : <Login onLoginSuccess={setUsuario} />}
