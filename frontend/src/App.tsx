@@ -96,8 +96,11 @@ const App = () => {
   }, [location.pathname]);
 
   const handleLogout = async () => {
-    await authService.logout();
-    setUsuario(null);
+    try {
+      await authService.logout();
+    } finally {
+      setUsuario(null);
+    }
   };
 
   const handleFiltroChange = (campo: keyof FiltrosState, valor: string | number) => {
@@ -242,7 +245,7 @@ const App = () => {
                 <Loader color="blue" />
               </Center>
             ) : usuario ? (
-              <GestionPaseos />
+              <GestionPaseos usuario={usuario} />
             ) : (
               <Navigate to="/login" />
             )

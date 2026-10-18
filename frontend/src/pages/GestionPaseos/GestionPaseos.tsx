@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Avatar, Badge, Button, Center, Container, Group, Loader, Paper, SimpleGrid, Tabs, Text, Title } from "@mantine/core";
 import bookingService from "../../services/bookings";
 import { mensajeError } from "../../services/http";
-import type { EstadoPaseo, PaseoData } from "../../types/data";
+import type { EstadoPaseo, PaseoData, UsuarioData } from "../../types/data";
 import { formatearDuracion, formatearFecha, formatearPrecio } from "../../utils/formato";
 import classes from "./GestionPaseos.module.css";
 import { Link } from "react-router-dom";
@@ -15,7 +15,12 @@ const ETIQUETA_ESTADO: Record<EstadoPaseo, string> = {
   cancelled: "Cancelado",
 };
 
-const GestionPaseos = () => {
+interface GestionPaseosProps {
+  usuario?: UsuarioData | null;
+}
+
+const GestionPaseos = ({ usuario }: GestionPaseosProps) => {
+  const esWalker = usuario?.rol === "walker";
   const [paseos, setPaseos] = useState<PaseoData[]>([]);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -101,26 +106,32 @@ const GestionPaseos = () => {
 
                       <Group gap="xs" my="sm">
                         <Badge variant="light" color="gray" className={classes.chip}>{formatearPrecio(p.precio)}</Badge>
-                        <Badge variant="light" color="gray" className={classes.chip}>Dueño/a: {p.dueno}</Badge>
+                        <Badge variant="light" color="gray" className={classes.chip}>{esWalker ? `Dueño/a: ${p.dueno}` : `Paseador: ${p.paseador || "Asignado"}`}</Badge>
                       </Group>
 
-                      <Group grow>
-                        <Button onClick={() => cambiarEstado(p.id, "accepted")}>Aceptar</Button>
-                        <Button variant="outline" color="red" onClick={() => cambiarEstado(p.id, "rejected")}>
-                          Rechazar
+                      {esWalker ? (
+                        <Group grow>
+                          <Button onClick={() => cambiarEstado(p.id, "accepted")}>Aceptar</Button>
+                          <Button variant="outline" color="red" onClick={() => cambiarEstado(p.id, "rejected")}>
+                            Rechazar
+                          </Button>
+                        </Group>
+                      ) : (
+                        <Button fullWidth variant="outline" color="red" onClick={() => cambiarEstado(p.id, "cancelled")}>
+                          Cancelar solicitud
                         </Button>
-                      </Group>
+                      )}
                     </Paper>
                   ))}
                 </SimpleGrid>
               )}
 
               <Title order={3} className={classes.subtitulo}>Historial reciente</Title>
-              <HistorialLista items={historial.slice(0, 3)} onFinalizar={(id) => cambiarEstado(id, "completed")} />
+              <HistorialLista items={historial.slice(0, 3)} esWalker={esWalker} onFinalizar={(id) => cambiarEstado(id, "completed")} onCancelar={(id) => cambiarEstado(id, "cancelled")} />
             </Tabs.Panel>
 
             <Tabs.Panel value="historial">
-              <HistorialLista items={historial} onFinalizar={(id) => cambiarEstado(id, "completed")} />
+              <HistorialLista items={historial} esWalker={esWalker} onFinalizar={(id) => cambiarEstado(id, "completed")} onCancelar={(id) => cambiarEstado(id, "cancelled")} />
             </Tabs.Panel>
           </Tabs>
         )}
@@ -131,10 +142,12 @@ const GestionPaseos = () => {
 
 interface HistorialListaProps {
   items: PaseoData[];
+  esWalker: boolean;
   onFinalizar: (id: string) => void;
+  onCancelar: (id: string) => void;
 }
 
-const HistorialLista = ({ items, onFinalizar }: HistorialListaProps) => {
+const HistorialLista = ({ items, esWalker, onFinalizar, onCancelar }: HistorialListaProps) => {
   if (items.length === 0) {
     return <Text c="dimmed" size="sm">Aún no hay paseos en el historial.</Text>;
   }
@@ -149,13 +162,19 @@ const HistorialLista = ({ items, onFinalizar }: HistorialListaProps) => {
           <Text size="sm" c="dimmed" style={{ flex: 1 }}>
             {formatearDuracion(p.duracionMin)} · {formatearPrecio(p.precio)}
           </Text>
-          {p.estado === "accepted" && (
+          {p.estado === "accepted" && esWalker && (
             <Button size="xs" variant="light" onClick={() => onFinalizar(p.id)}>
               Marcar como finalizado
             </Button>
           )}
 
-          {p.estado == "completed" && (
+          {p.estado === "accepted" && !esWalker && (
+            <Button size="xs" variant="outline" color="red" onClick={() => onCancelar(p.id)}>
+              Cancelar paseo
+            </Button>
+          )}
+
+          {p.estado == "completed" && !esWalker && (
             <Button
               component={Link}
               to={`/paseos/${p.id}/resena`}
