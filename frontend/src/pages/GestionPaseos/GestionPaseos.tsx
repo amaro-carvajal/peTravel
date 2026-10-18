@@ -5,6 +5,7 @@ import { mensajeError } from "../../services/http";
 import type { EstadoPaseo, PaseoData } from "../../types/data";
 import { formatearDuracion, formatearFecha, formatearPrecio } from "../../utils/formato";
 import classes from "./GestionPaseos.module.css";
+import { Link } from "react-router-dom";
 
 const ETIQUETA_ESTADO: Record<EstadoPaseo, string> = {
   pending: "Pendiente",
@@ -153,6 +154,19 @@ const HistorialLista = ({ items, onFinalizar }: HistorialListaProps) => {
               Marcar como finalizado
             </Button>
           )}
+
+          {p.estado == "completed" && (
+            <Button
+              component={Link}
+              to={`/paseos/${p.id}/resena`}
+              size="xs"
+              variant="light"
+              color="teal"
+            >
+              Dejar reseña
+            </Button>
+          )}
+
           <Text size="xs" c="dimmed">{formatearFecha(p.fecha)}</Text>
         </Group>
       ))}
