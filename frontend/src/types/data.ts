@@ -22,3 +22,20 @@ export interface PaseadorData {
   };
   resenas: Resena[];
 }
+
+export type EstadoPaseo = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
+
+export interface PaseoData {
+  id: string;
+  mascota: string;
+  raza: string;
+  tamano: string; // "pequeño", "mediano", "grande"
+  fecha: string; // "YYYY-MM-DD"
+  hora: string; // "HH:mm"
+  direccion: string;
+  duracionMin: number;
+  precio: number;
+  dueno: string;
+  paseador: string;
+  estado: EstadoPaseo;
+}

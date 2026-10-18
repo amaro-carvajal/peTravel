@@ -5,6 +5,8 @@ import walkerService from "./services/walkers";
 import { Route, Routes } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
 import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
+import GestionPaseos from "./pages/GestionPaseos/GestionPaseos";
+import FormularioResena from "./pages/FormularioResena/FormularioResena";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
 import { Navbar }  from "./components/Navbar";
 import classes from "./App.module.css";
@@ -94,6 +96,8 @@ const App = () => {
           </Container>
         } />
         <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
+        <Route path="/mis-paseos" element={<GestionPaseos />} />
+        <Route path="/paseos/:id/resena" element={<FormularioResena />} />
       </Routes>
     </>
   );
