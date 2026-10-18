@@ -46,10 +46,9 @@
 .verPerfil {
   --button-bg: #ffffff;
   --button-color: #111827;
-  --button-bd: #111827;
-  --button-hover: #111827;
-  --button-hover-color: #ffffff;
-  --button-hover-bd: #111827;
+  --button-bd: 1px solid #111827;
+  --button-hover: #111827 !important;
+  --button-hover-color: #ffffff !important;
   --button-radius: 6px;
   font-weight: 600;
 }
