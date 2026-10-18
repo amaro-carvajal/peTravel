@@ -1,4 +1,4 @@
-import { Badge, Button, Container, Group, Stack, Text, Title } from "@mantine/core";
+import { Button, Container, Group, Menu, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router-dom";
 import type { UsuarioData } from "../../types/data";
 import classes from "./Navbar.module.css";
@@ -25,46 +25,54 @@ const Navbar = ({ usuario, onLogout }: NavbarProps) => (
         </Stack>
 
         {usuario ? (
-          <Group gap="sm">
-            <Badge className={classes.rolBadge} size="lg">
-              {usuario.rol === "owner" ? "Dueño" : "Paseador"}
-            </Badge>
-            <Text className={classes.userInfo}>{usuario.nombre}</Text>
+          <Group gap="md" className={classes.accountActions}>
+            <Text className={classes.userInfo}>
+              {usuario.nombre}
+              <span className={classes.userRole}>
+                {usuario.rol === "owner" ? " · Dueño" : " · Paseador"}
+              </span>
+            </Text>
 
-            {usuario.rol === "owner" && (
-              <Button
-                component={Link}
-                to="/mis-mascotas"
-                variant="light"
-                color="blue"
-                size="sm"
-              >
-                Mis mascotas
-              </Button>
-            )}
+            <Menu shadow="md" width={210} position="bottom-end">
+              <Menu.Target>
+                <Button
+                  variant="subtle"
+                  size="sm"
+                  rightSection={<span className={classes.chevron} aria-hidden="true">▾</span>}
+                  className={classes.menuButton}
+                  aria-label="Abrir menú Mi espacio"
+                >
+                  Mi espacio
+                </Button>
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                <Menu.Label>
+                  {usuario.rol === "owner" ? "Cuenta de dueño" : "Cuenta de paseador"}
+                </Menu.Label>
+                {usuario.rol === "owner" && (
+                  <Menu.Item component={Link} to="/mis-mascotas">
+                    Mis mascotas
+                  </Menu.Item>
+                )}
+                <Menu.Item component={Link} to="/mis-paseos">
+                  Mis paseos
+                </Menu.Item>
+                {usuario.rol === "walker" && (
+                  <Menu.Item component={Link} to="/mi-perfil">
+                    Mi perfil
+                  </Menu.Item>
+                )}
+              </Menu.Dropdown>
+            </Menu>
 
             <Button
-              component={Link}
-              to="/mis-paseos"
-              variant="subtle"
-              color="gray.0"
+              variant="white"
+              color="blue"
               size="sm"
-            > 
-              Mis paseos
-            </Button>
-
-            {usuario.rol === "walker" && (
-              <Button
-                component={Link}
-                to="/mi-perfil"
-                variant="light"
-                color="blue"
-                size="sm"
-              >
-                Ver mi perfil
-              </Button>
-            )}
-            <Button variant="white" color="blue" size="sm" onClick={onLogout}>
+              onClick={onLogout}
+              className={classes.logoutButton}
+            >
               Cerrar sesión
             </Button>
           </Group>

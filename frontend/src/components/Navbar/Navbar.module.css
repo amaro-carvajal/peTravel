@@ -33,10 +33,42 @@
   color: #ffffff;
   font-weight: 600;
   font-size: 0.95rem;
+  white-space: nowrap;
 }
 
-.rolBadge {
-  --badge-bg: rgba(255, 255, 255, 0.18);
-  --badge-color: #ffffff;
-  text-transform: none;
+.userRole {
+  color: #bfdbfe;
+  font-weight: 400;
+}
+
+.accountActions {
+  flex-wrap: nowrap;
+}
+
+.menuButton {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.menuButton:hover {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+.chevron {
+  font-size: 0.8rem;
+}
+
+.logoutButton {
+  white-space: nowrap;
+}
+
+@media (max-width: 48em) {
+  .accountActions {
+    gap: 8px;
+  }
+
+  .userInfo {
+    font-size: 0.85rem;
+  }
 }
