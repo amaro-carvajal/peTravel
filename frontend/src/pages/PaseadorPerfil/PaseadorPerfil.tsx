@@ -10,17 +10,20 @@ const listProps = { listStyleType: "none", spacing: "xs", classNames: { item: cl
 interface PaseadorPerfilProps {
   id?: string;
   usuario?: UsuarioData | null;
+  perfil?: PaseadorData;
+  onEditar?: () => void;
 }
 
-const PaseadorPerfil = ({ id: idProp, usuario }: PaseadorPerfilProps = {}) => {
+const PaseadorPerfil = ({ id: idProp, usuario, perfil, onEditar }: PaseadorPerfilProps = {}) => {
   const { id: idParam } = useParams<{ id: string }>();
   const id = idProp ?? idParam;
-  const [paseador, setPaseador] = useState<PaseadorData | null>(null);
+  const [paseadorCargado, setPaseador] = useState<PaseadorData | null>(null);
+  const paseador = perfil ?? paseadorCargado;
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    if (!id) return;
+    if (perfil || !id) return;
 
     walkerService
       .getById(id)
@@ -33,7 +36,7 @@ const PaseadorPerfil = ({ id: idProp, usuario }: PaseadorPerfilProps = {}) => {
         setError("No se pudo encontrar la información del paseador.");
         setCargando(false);
       });
-  }, [id]);
+  }, [id, perfil]);
 
   return (
     <Container component="main" size={1200} py={36}>
@@ -49,7 +52,12 @@ const PaseadorPerfil = ({ id: idProp, usuario }: PaseadorPerfilProps = {}) => {
       >
         Volver a paseadores
       </Button>
-      {cargando ? (
+      {onEditar && (
+        <Button onClick={onEditar} mb="md" ml="md">
+          Editar perfil
+        </Button>
+      )}
+      {!perfil && cargando ? (
         <Center py="xl">
           <Loader color="blue" />
         </Center>

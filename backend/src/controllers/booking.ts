@@ -4,8 +4,29 @@ import Booking from "../models/booking";
 import Pet from "../models/pet";
 import Walker from "../models/walker";
 import middleware from "../utils/middleware";
+import { BLOCKING_STATUSES, bookingDay, dayRange, validateBookingSlot } from "../utils/availability";
 
 const router = express.Router();
+
+// Solo se exponen los intervalos ocupados, sin datos de owners, mascotas ni direcciones.
+router.get("/occupied", middleware.withUser, async (request, response) => {
+  const { walker, date } = request.query;
+  const day = typeof date === "string" ? bookingDay(date) : null;
+  if (typeof walker !== "string" || !mongoose.isObjectIdOrHexString(walker) || !day) {
+    response.status(400).json({ error: "Paseador o fecha inválidos" });
+    return;
+  }
+  if (!await Walker.exists({ _id: walker })) {
+    response.status(404).json({ error: "Paseador no encontrado" });
+    return;
+  }
+  const occupied = await Booking.find({
+    walker, date: dayRange(day), status: { $in: BLOCKING_STATUSES },
+  }).select("startTime durationMinutes -_id");
+  response.json(occupied.map((booking) => ({
+    startTime: booking.startTime, durationMinutes: booking.durationMinutes,
+  })));
+});
 
 router.get("/", middleware.withUser, async (request, response) => {
   if (request.userRole === "owner") {
@@ -71,7 +92,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
     return;
   }
 
-  if (typeof date !== "string" || date.trim().length === 0 || Number.isNaN(new Date(date).getTime())) {
+  if (typeof date !== "string" || date.trim().length === 0 || !bookingDay(date)) {
     response.status(400).json({ error: "Fecha inválida" });
     return;
   }
@@ -81,7 +102,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
     return;
   }
 
-  if (typeof durationMinutes !== "number" || !Number.isFinite(durationMinutes) || durationMinutes < 30) {
+  if (typeof durationMinutes !== "number" || !Number.isInteger(durationMinutes) || durationMinutes < 30) {
     response.status(400).json({ error: "Duración inválida" });
     return;
   }
@@ -113,10 +134,9 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
     return;
   }
 
-  const selectedWalker = await Walker.findById(walker);
-
-  if (!selectedWalker) {
-    response.status(404).json({ error: "Paseador no encontrado" });
+  const slotError = await validateBookingSlot(walker, new Date(date), startTime, durationMinutes);
+  if (slotError) {
+    response.status(slotError.status).json({ error: slotError.error });
     return;
   }
 
@@ -173,7 +193,7 @@ router.put("/:id", middleware.withUser, async (request, response) => {
 
   const { date, startTime, durationMinutes, pickupAddress, notes, totalPrice, status } = fields;
 
-  if (date !== undefined && (typeof date !== "string" || date.trim().length === 0 || Number.isNaN(new Date(date).getTime()))) {
+  if (date !== undefined && (typeof date !== "string" || date.trim().length === 0 || !bookingDay(date))) {
     response.status(400).json({ error: "Fecha inválida" });
     return;
   }
@@ -183,7 +203,7 @@ router.put("/:id", middleware.withUser, async (request, response) => {
     return;
   }
 
-  if (durationMinutes !== undefined && (typeof durationMinutes !== "number" || !Number.isFinite(durationMinutes) || durationMinutes < 30)) {
+  if (durationMinutes !== undefined && (typeof durationMinutes !== "number" || !Number.isInteger(durationMinutes) || durationMinutes < 30)) {
     response.status(400).json({ error: "Duración inválida" });
     return;
   }
@@ -234,6 +254,23 @@ router.put("/:id", middleware.withUser, async (request, response) => {
         response.status(400).json({ error: "La reserva debe estar aceptada antes de completarla" });
         return;
       }
+    }
+  }
+
+  // Evita eludir la validación cambiando la fecha/hora o aceptando una reserva antigua.
+  const nextStatus = status ?? booking.status;
+  if ((nextStatus === "pending" || nextStatus === "accepted") &&
+      (date !== undefined || startTime !== undefined || durationMinutes !== undefined || status === "accepted")) {
+    const slotError = await validateBookingSlot(
+      booking.walker.toString(),
+      typeof date === "string" ? new Date(date) : booking.date,
+      typeof startTime === "string" ? startTime : booking.startTime,
+      typeof durationMinutes === "number" ? durationMinutes : booking.durationMinutes,
+      booking.id,
+    );
+    if (slotError) {
+      response.status(slotError.status).json({ error: slotError.error });
+      return;
     }
   }
 

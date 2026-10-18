@@ -1,10 +1,11 @@
 import {
+  ActionIcon,
   Button,
-  Checkbox,
   Container,
   Group,
   NumberInput,
   Paper,
+  Select,
   Stack,
   MultiSelect,
   Text,
@@ -14,14 +15,16 @@ import {
 } from "@mantine/core";
 import { useState, type SubmitEvent } from "react";
 import axios from "axios";
-import walkerService from "../../services/walkers";
+import walkerService, { type ActualizarPaseadorData, type PerfilPaseadorData } from "../../services/walkers";
 import { COMUNAS_CHILE } from "../../data/comunasChile";
-import type { UsuarioData } from "../../types/data";
+import type { BackendAvailability, UsuarioData } from "../../types/data";
 import classes from "./FormularioPerfil.module.css";
 
 interface FormularioPerfilProps {
   usuario: UsuarioData | null;
-  onCreado: (id: string) => void;
+  perfil: PerfilPaseadorData | null;
+  onGuardado: (perfil: PerfilPaseadorData) => void;
+  onCancelar?: () => void;
 }
 
 const DIAS = [
@@ -34,39 +37,62 @@ const DIAS = [
   { value: "sunday", label: "Domingo" },
 ];
 
-const HORA_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+const HORA_REGEX = /^([01]\d|2[0-3]):(00|30)$/;
+const HORAS = Array.from({ length: 48 }, (_, indice) =>
+  `${String(Math.floor(indice / 2)).padStart(2, "0")}:${indice % 2 === 0 ? "00" : "30"}`
+);
 
-interface HorarioDia {
-  activo: boolean;
+interface BloqueHorario {
   inicio: string;
   fin: string;
 }
 
-const HORARIOS_INICIALES: Record<string, HorarioDia> = Object.fromEntries(
-  DIAS.map((dia) => [dia.value, { activo: false, inicio: "09:00", fin: "13:00" }])
-);
+const validarBloque = (bloque: BloqueHorario): string | null => {
+  if (!HORA_REGEX.test(bloque.inicio) || !HORA_REGEX.test(bloque.fin)) {
+    return "Selecciona ambas horas en intervalos de 30 minutos.";
+  }
+  if (bloque.fin <= bloque.inicio) {
+    return "La hora final debe ser posterior a la hora inicial.";
+  }
+  return null;
+};
 
-const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
-  const [descripcion, setDescripcion] = useState("");
-  const [zonas, setZonas] = useState<string[]>([]);
-  const [tarifa, setTarifa] = useState<number | string>("");
-  const [telefono, setTelefono] = useState("");
-  const [foto, setFoto] = useState("");
-  const [horarios, setHorarios] = useState<Record<string, HorarioDia>>(HORARIOS_INICIALES);
+const FormularioPerfil = ({ usuario, perfil, onGuardado, onCancelar }: FormularioPerfilProps) => {
+  const [descripcion, setDescripcion] = useState(perfil?.descripcion ?? "");
+  const [zonas, setZonas] = useState<string[]>(perfil?.zonas ?? []);
+  const [tarifa, setTarifa] = useState<number | string>(perfil?.tarifa ?? "");
+  const [telefono, setTelefono] = useState(perfil?.contacto.telefono ?? "");
+  const [foto, setFoto] = useState(perfil?.foto ?? "");
+  const [horarios, setHorarios] = useState<Record<string, BloqueHorario[]>>(() => {
+    const iniciales: Record<string, BloqueHorario[]> = Object.fromEntries(
+      DIAS.map((dia) => [dia.value, []])
+    );
+    for (const horario of perfil?.horarios ?? []) {
+      for (const dia of horario.days) {
+        iniciales[dia]?.push({ inicio: horario.startTime, fin: horario.endTime });
+      }
+    }
+    return iniciales;
+  });
+  const comunasDisponibles = [...new Set([...COMUNAS_CHILE, ...(perfil?.zonas ?? [])])];
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
+  const hayBloquesInvalidos = Object.values(horarios).some((bloques) =>
+    bloques.some((bloque) => validarBloque(bloque) !== null)
+  );
 
-  const toggleDia = (dia: string) => {
-    setHorarios((prev) => ({
-      ...prev,
-      [dia]: { ...prev[dia], activo: !prev[dia].activo },
-    }));
+  const agregarBloque = (dia: string) => {
+    setHorarios((prev) => ({ ...prev, [dia]: [...prev[dia], { inicio: "", fin: "" }] }));
   };
 
-  const cambiarHora = (dia: string, campo: "inicio" | "fin", valor: string) => {
+  const eliminarBloque = (dia: string, indice: number) => {
+    setHorarios((prev) => ({ ...prev, [dia]: prev[dia].filter((_, i) => i !== indice) }));
+  };
+
+  const cambiarHora = (dia: string, indice: number, campo: keyof BloqueHorario, valor: string) => {
     setHorarios((prev) => ({
       ...prev,
-      [dia]: { ...prev[dia], [campo]: valor },
+      [dia]: prev[dia].map((bloque, i) => i === indice ? { ...bloque, [campo]: valor } : bloque),
     }));
   };
 
@@ -75,7 +101,7 @@ const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
     setError(null);
 
     if (!usuario) {
-      setError("Debes iniciar sesión para crear tu perfil.");
+      setError("Debes iniciar sesión para guardar tu perfil.");
       return;
     }
 
@@ -89,7 +115,7 @@ const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
       return;
     }
 
-    if (zonas.some((zona) => !COMUNAS_CHILE.includes(zona))) {
+    if (zonas.some((zona) => !comunasDisponibles.includes(zona))) {
       setError("Selecciona comunas del listado.");
       return;
     }
@@ -106,47 +132,37 @@ const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
       return;
     }
 
-    const diasActivos = DIAS.filter((dia) => horarios[dia.value].activo);
-
-    for (const dia of diasActivos) {
-      const h = horarios[dia.value];
-      if (!HORA_REGEX.test(h.inicio) || !HORA_REGEX.test(h.fin)) {
-        setError(`Revisa el horario de ${dia.label}: usa el formato HH:MM.`);
-        return;
+    const availability: BackendAvailability[] = [];
+    for (const dia of DIAS) {
+      for (const bloque of horarios[dia.value]) {
+        const errorBloque = validarBloque(bloque);
+        if (errorBloque) {
+          setError(`${dia.label}: ${errorBloque}`);
+          return;
+        }
+        availability.push({ days: [dia.value], startTime: bloque.inicio, endTime: bloque.fin });
       }
     }
-
-    const grupos: Record<string, string[]> = {};
-
-    for (const dia of diasActivos) {
-      const h = horarios[dia.value];
-      const clave = `${h.inicio}|${h.fin}`;
-      (grupos[clave] ??= []).push(dia.value);
-    }
-
-    const availability = Object.entries(grupos).map(([clave, days]) => {
-      const [startTime, endTime] = clave.split("|");
-      return { days, startTime, endTime };
-    });
 
     setCargando(true);
 
     try {
-      const creado = await walkerService.create({
-        name: usuario.nombre,
+      const datos: ActualizarPaseadorData = {
         description: descripcion.trim(),
         coverageAreas: zonas,
         hourlyRate: tarifaNumero,
         phone: telefono.trim(),
-        email: usuario.email,
-        photo: foto.trim() || undefined,
-        availability: availability.length > 0 ? availability : undefined,
-      });
-      onCreado(creado.id);
+        photo: foto.trim(),
+        availability,
+      };
+      const resultado = perfil
+        ? await walkerService.update(perfil.id, datos)
+        : await walkerService.create({ ...datos, name: usuario.nombre, email: usuario.email });
+      onGuardado(resultado);
     } catch (err: unknown) {
       const mensaje =
         (axios.isAxiosError<{ error: string }>(err) && err.response?.data?.error) ||
-        "No se pudo crear tu perfil.";
+        "No se pudo guardar tu perfil.";
       setError(mensaje);
     } finally {
       setCargando(false);
@@ -157,10 +173,10 @@ const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
     <Container size={1200} className={classes.wrapper}>
       <Paper className={classes.card}>
         <Title order={2} className={classes.titulo}>
-          Crea tu perfil de paseador
+          {perfil ? "Edita tu perfil de paseador" : "Crea tu perfil de paseador"}
         </Title>
         <Text className={classes.subtitulo}>
-          Completa tus datos para aparecer en el listado de paseadores.
+          {perfil ? "Actualiza los datos de tu servicio." : "Completa tus datos para aparecer en el listado de paseadores."}
         </Text>
 
         <form onSubmit={handleSubmit}>
@@ -190,7 +206,7 @@ const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
             <MultiSelect
               label="Comunas de cobertura"
               placeholder="Selecciona una o más comunas"
-              data={COMUNAS_CHILE}
+              data={comunasDisponibles}
               searchable
               nothingFoundMessage="No se encontraron comunas"
               required
@@ -222,49 +238,85 @@ const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
               onChange={(e) => setFoto(e.currentTarget.value)}
             />
 
-            <div>
-              <Text size="sm" fw={500} mb={4}>
-                Disponibilidad (opcional)
+            <section aria-labelledby="disponibilidad-titulo">
+              <Text id="disponibilidad-titulo" size="sm" fw={600}>
+                Disponibilidad semanal
               </Text>
-              <Stack gap="xs" mt={4}>
+              <Text size="xs" c="dimmed" mt={2} mb="sm">
+                Define los días y horarios en que pueden agendar paseos contigo.
+              </Text>
+              <div className={classes.semana}>
                 {DIAS.map((dia) => (
-                  <Group key={dia.value} gap="sm" wrap="nowrap">
-                    <Checkbox
-                      checked={horarios[dia.value].activo}
-                      onChange={() => toggleDia(dia.value)}
-                      label={dia.label}
-                      w={130}
-                    />
-                    {horarios[dia.value].activo && (
-                      <Group gap="xs">
-                        <TextInput
-                          size="xs"
-                          placeholder="09:00"
-                          value={horarios[dia.value].inicio}
-                          onChange={(e) =>
-                            cambiarHora(dia.value, "inicio", e.currentTarget.value)
-                          }
-                          w={90}
-                        />
-                        <TextInput
-                          size="xs"
-                          placeholder="13:00"
-                          value={horarios[dia.value].fin}
-                          onChange={(e) =>
-                            cambiarHora(dia.value, "fin", e.currentTarget.value)
-                          }
-                          w={90}
-                        />
+                  <div key={dia.value} className={classes.dia}>
+                    <Text size="sm" fw={500} className={classes.nombreDia}>{dia.label}</Text>
+                    {horarios[dia.value].length === 0 ? (
+                      <Group justify="space-between" gap="xs" wrap="nowrap">
+                        <Text size="xs" c="dimmed">Sin disponibilidad</Text>
+                        <Button type="button" variant="subtle" size="compact-xs" onClick={() => agregarBloque(dia.value)}>
+                          + Agregar
+                        </Button>
                       </Group>
+                    ) : (
+                      <Stack gap={6}>
+                        {horarios[dia.value].map((bloque, indice) => (
+                          <div key={indice} className={classes.bloque}>
+                            <Select
+                              size="xs"
+                              aria-label={`${dia.label}, bloque ${indice + 1}, desde`}
+                              data={HORAS}
+                              placeholder="Inicio"
+                              required
+                              value={HORAS.includes(bloque.inicio) ? bloque.inicio : null}
+                              onChange={(valor) => cambiarHora(dia.value, indice, "inicio", valor ?? "")}
+                            />
+                            <Text size="sm" c="dimmed" className={classes.separador} aria-hidden="true">—</Text>
+                            <Select
+                              size="xs"
+                              error={bloque.inicio && bloque.fin ? validarBloque(bloque) : undefined}
+                              aria-label={`${dia.label}, bloque ${indice + 1}, hasta`}
+                              data={HORAS}
+                              placeholder="Fin"
+                              required
+                              value={HORAS.includes(bloque.fin) ? bloque.fin : null}
+                              onChange={(valor) => cambiarHora(dia.value, indice, "fin", valor ?? "")}
+                            />
+                            <ActionIcon
+                              type="button"
+                              variant="subtle"
+                              color="gray"
+                              size="sm"
+                              mt={4}
+                              aria-label={`Eliminar bloque ${indice + 1} de ${dia.label}`}
+                              title="Eliminar bloque"
+                              onClick={() => eliminarBloque(dia.value, indice)}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6" />
+                              </svg>
+                            </ActionIcon>
+                          </div>
+                        ))}
+                        <Button type="button" variant="subtle" size="compact-xs" className={classes.agregarBloque} onClick={() => agregarBloque(dia.value)}>
+                          + Agregar bloque
+                        </Button>
+                      </Stack>
                     )}
-                  </Group>
+                  </div>
                 ))}
-              </Stack>
-            </div>
+              </div>
+              <Text size="xs" c="dimmed" mt="xs">
+                Mientras no tengas horarios disponibles, no podrán agendar paseos contigo.
+              </Text>
+            </section>
 
-            <Button type="submit" fullWidth loading={cargando} mt="sm">
-              Crear mi perfil
+            <Button type="submit" fullWidth loading={cargando} disabled={hayBloquesInvalidos} mt="sm">
+              {perfil ? "Guardar cambios" : "Crear mi perfil"}
             </Button>
+            {perfil && onCancelar && (
+              <Button type="button" variant="default" disabled={cargando} onClick={onCancelar}>
+                Cancelar
+              </Button>
+            )}
           </Stack>
         </form>
       </Paper>

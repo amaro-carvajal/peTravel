@@ -37,16 +37,21 @@ const availabilitySchema = new mongoose.Schema<WalkerData["availability"][number
     startTime: {
       type: String,
       required: true,
-      match: /^([01]\d|2[0-3]):[0-5]\d$/,
+      match: [/^([01]\d|2[0-3]):(00|30)$/, "Selecciona una hora cada 30 minutos"],
     },
     endTime: {
       type: String,
       required: true,
-      match: /^([01]\d|2[0-3]):[0-5]\d$/,
+      match: [/^([01]\d|2[0-3]):(00|30)$/, "Selecciona una hora cada 30 minutos"],
     },
   },
   { _id: false }
 );
+
+availabilitySchema.path("days").validate((days: WalkerDay[]) => days.length > 0, "Selecciona al menos un día");
+availabilitySchema.path("endTime").validate(function (this: WalkerData["availability"][number], endTime: string) {
+  return this.startTime < endTime;
+}, "El inicio del bloque debe ser anterior al fin");
 
 const walkerSchema = new mongoose.Schema<WalkerData>(
   {

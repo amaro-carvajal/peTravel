@@ -79,6 +79,11 @@ export interface BackendAvailability {
   endTime: string;
 }
 
+export interface HorarioOcupado {
+  startTime: string;
+  durationMinutes: number;
+}
+
 export interface BackendWalker {
   id: string;
   name: string;

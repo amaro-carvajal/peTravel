@@ -45,7 +45,11 @@ const formatDays = (days: string[]): string => {
   return `${translated.slice(0, -1).join(', ')} y ${translated[translated.length - 1]}`;
 };
 
-const adaptWalker = (backendWalker: BackendWalker, resenas: Resena[] = []): PaseadorData => ({
+export interface PerfilPaseadorData extends PaseadorData {
+  horarios: BackendAvailability[];
+}
+
+const adaptWalker = (backendWalker: BackendWalker, resenas: Resena[] = []): PerfilPaseadorData => ({
   id: backendWalker.id,
   nombre: backendWalker.name,
   comuna: backendWalker.coverageAreas?.[0] || 'Sin comuna',
@@ -54,6 +58,7 @@ const adaptWalker = (backendWalker: BackendWalker, resenas: Resena[] = []): Pase
   calificacion: backendWalker.rating ?? 5,
   descripcion: backendWalker.description,
   foto: backendWalker.photo,
+  horarios: backendWalker.availability || [],
   disponibilidad: (backendWalker.availability || []).map(
     (a: BackendAvailability) => `${formatDays(a.days)}: ${a.startTime} - ${a.endTime}`
   ),
@@ -69,7 +74,7 @@ const getAll = async (): Promise<PaseadorData[]> => {
   return response.data.map((walker: BackendWalker) => adaptWalker(walker));
 };
 
-const getById = async (id: string): Promise<PaseadorData> => {
+const getById = async (id: string): Promise<PerfilPaseadorData> => {
   const [walkerRes, reviewsRes] = await Promise.all([
     axios.get<BackendWalker>(`${baseUrl}/${id}`),
     axios.get<BackendReview[]>(`/reviews?walker=${id}`).catch(() => ({ data: [] as BackendReview[] })),
@@ -97,7 +102,7 @@ const getById = async (id: string): Promise<PaseadorData> => {
   return adaptWalker(walkerRes.data, resenasAdaptadas);
 };
 
-const getMe = async (): Promise<PaseadorData> => {
+const getMe = async (): Promise<PerfilPaseadorData> => {
   const response = await axios.get<BackendWalker>(`${baseUrl}/me`);
   return adaptWalker(response.data);
 };
@@ -117,9 +122,22 @@ export interface NuevoPaseadorData {
   }[];
 }
 
-const create = async (paseador: NuevoPaseadorData): Promise<PaseadorData> => {
+const create = async (paseador: NuevoPaseadorData): Promise<PerfilPaseadorData> => {
   const response = await axios.post<BackendWalker>(baseUrl, paseador);
   return adaptWalker(response.data);
 };
 
-export default { getAll, getById, getMe, create };
+export type ActualizarPaseadorData = Pick<
+  NuevoPaseadorData,
+  'description' | 'coverageAreas' | 'hourlyRate' | 'phone' | 'photo' | 'availability'
+>;
+
+const update = async (id: string, paseador: ActualizarPaseadorData): Promise<PerfilPaseadorData> => {
+  const { description, coverageAreas, hourlyRate, phone, photo, availability } = paseador;
+  const response = await axios.put<BackendWalker>(`${baseUrl}/${id}`, {
+    description, coverageAreas, hourlyRate, phone, photo, availability,
+  });
+  return adaptWalker(response.data);
+};
+
+export default { getAll, getById, getMe, create, update };

@@ -1,17 +1,18 @@
 import { Center, Container, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import walkerService from "../../services/walkers";
+import walkerService, { type PerfilPaseadorData } from "../../services/walkers";
 import type { UsuarioData } from "../../types/data";
-import PaseadorPerfil from "../PaseadorPerfil/PaseadorPerfil";
 import FormularioPerfil from "./FormularioPerfil";
+import PaseadorPerfil from "../PaseadorPerfil/PaseadorPerfil";
 
 interface MiPerfilProps {
   usuario: UsuarioData | null;
 }
 
 const MiPerfil = ({ usuario }: MiPerfilProps) => {
-  const [walkerId, setWalkerId] = useState<string | null>(null);
+  const [perfil, setPerfil] = useState<PerfilPaseadorData | null>(null);
+  const [editando, setEditando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +20,7 @@ const MiPerfil = ({ usuario }: MiPerfilProps) => {
     walkerService
       .getMe()
       .then((data) => {
-        setWalkerId(data.id);
+        setPerfil(data);
         setCargando(false);
       })
       .catch((err: unknown) => {
@@ -49,11 +50,22 @@ const MiPerfil = ({ usuario }: MiPerfilProps) => {
     );
   }
 
-  if (walkerId) {
-    return <PaseadorPerfil id={walkerId} usuario={usuario} />;
+  if (perfil && !editando) {
+    return <PaseadorPerfil perfil={perfil} usuario={usuario} onEditar={() => setEditando(true)} />;
   }
 
-  return <FormularioPerfil usuario={usuario} onCreado={setWalkerId} />;
+  return (
+    <FormularioPerfil
+      key={perfil?.id ?? "nuevo"}
+      usuario={usuario}
+      perfil={perfil}
+      onGuardado={(guardado) => {
+        setPerfil(guardado);
+        setEditando(false);
+      }}
+      onCancelar={perfil ? () => setEditando(false) : undefined}
+    />
+  );
 };
 
 export default MiPerfil;

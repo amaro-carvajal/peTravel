@@ -1,5 +1,6 @@
 import axios from 'axios';
-import type { NuevaReservaData, ReservaData } from '../types/data';
+import type { HorarioOcupado, NuevaReservaData, ReservaData } from '../types/data';
+import { authConfig } from './http';
 
 const baseUrl = '/bookings';
 
@@ -18,4 +19,11 @@ const create = async (reserva: NuevaReservaData): Promise<ReservaData> => {
   return response.data;
 };
 
-export default { create };
+const getOccupied = async (walker: string, date: string): Promise<HorarioOcupado[]> => {
+  const response = await axios.get<HorarioOcupado[]>(`${baseUrl}/occupied`, {
+    ...authConfig(), params: { walker, date },
+  });
+  return response.data;
+};
+
+export default { create, getOccupied };
