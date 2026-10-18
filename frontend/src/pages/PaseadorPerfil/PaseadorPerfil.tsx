@@ -37,7 +37,16 @@ const PaseadorPerfil = ({ id: idProp }: PaseadorPerfilProps = {}) => {
 
   return (
     <Container component="main" size={1200} py={36}>
-      <Button component={Link} to="/" variant="subtle" mb="md">
+      <Button
+        component={Link}
+        to="/"
+        variant="light"
+        color="blue"
+        radius="xl"
+        leftSection="←"
+        mb="md"
+        className={classes.volver}
+      >
         Volver a paseadores
       </Button>
       {cargando ? (
