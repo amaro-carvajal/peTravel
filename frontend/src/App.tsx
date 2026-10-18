@@ -18,6 +18,7 @@ import classes from "./App.module.css";
 const App = () => {
   const location = useLocation();
   const [usuario, setUsuario] = useState<UsuarioData | null>(null);
+  const [autenticando, setAutenticando] = useState<boolean>(true);
   const [paseadores, setPaseadores] = useState<PaseadorData[]>([]);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,8 @@ const App = () => {
     authService
       .getMe()
       .then((user) => setUsuario(user))
-      .catch(() => setUsuario(null));
+      .catch(() => setUsuario(null))
+      .finally(() => setAutenticando(false));
   }, []);
 
   useEffect(() => {
@@ -115,7 +117,20 @@ const App = () => {
           }
         />
         <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
-        <Route path="/mi-perfil" element={<MiPerfil usuario={usuario} />} />
+        <Route
+          path="/mi-perfil"
+          element={
+            autenticando ? (
+              <Center py="xl">
+                <Loader color="blue" />
+              </Center>
+            ) : usuario ? (
+              <MiPerfil usuario={usuario} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
         <Route
           path="/login"
           element={usuario ? <Navigate to="/" /> : <Login onLoginSuccess={setUsuario} />}
@@ -124,8 +139,34 @@ const App = () => {
           path="/registro"
           element={usuario ? <Navigate to="/" /> : <Registro onLoginSuccess={setUsuario} />}
         />
-        <Route path="/mis-paseos" element={<GestionPaseos />} />
-        <Route path="/paseos/:id/resena" element={<FormularioResena />} />
+        <Route 
+          path="/mis-paseos"
+          element={
+            autenticando ? (
+              <Center py="xl">
+                <Loader color="blue" />
+              </Center>
+            ) : usuario ? (
+              <GestionPaseos />
+            ) : (
+              <Navigate to="/login" />
+            )
+          } 
+        />
+        <Route 
+          path="/paseos/:id/resena" 
+          element={
+            autenticando ? (
+              <Center py="xl">
+                <Loader color="blue" />
+              </Center>
+            ) : usuario ? (
+              <FormularioResena />
+            ) : (
+              <Navigate to="/login" />
+            )
+          } 
+        />
       </Routes>
     </>
   );
