@@ -1,20 +1,6 @@
 import { useEffect, useState, type SubmitEvent } from "react";
-import {
-  Alert,
-  Button,
-  Center,
-  Container,
-  Group,
-  Loader,
-  NativeSelect,
-  Paper,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-  Title,
-} from "@mantine/core";
-import { Link, useParams } from "react-router-dom";
+import { Alert, Button, Center, Container, Group, Loader, NativeSelect, Paper, Stack, Text, Textarea, TextInput, Title } from "@mantine/core";
+import { Link, useLocation, useParams } from "react-router-dom";
 import bookingService from "../../services/booking";
 import { mensajeError } from "../../services/http";
 import petService from "../../services/pets";
@@ -50,6 +36,10 @@ const AgendarPaseo = () => {
   const [duracion, setDuracion] = useState("60");
   const [direccionRetiro, setDireccionRetiro] = useState("");
   const [notas, setNotas] = useState("");
+  const location = useLocation();
+  const origen = (location.state as { from?: string } | null)?.from;
+  const rutaVolver = origen || (paseador ? `/paseadores/${paseador.id}` : "/");
+  const textoVolver = origen === "/" ? "Volver a paseadores" : "Volver al perfil";
 
   useEffect(() => {
     if (!id) {
@@ -121,7 +111,7 @@ const AgendarPaseo = () => {
     <Container component="main" size={760} className={classes.wrapper}>
       <Button
         component={Link}
-        to={paseador ? `/paseadores/${paseador.id}` : "/"}
+        to={rutaVolver}
         variant="light"
         color="blue"
         radius="xl"
@@ -129,7 +119,7 @@ const AgendarPaseo = () => {
         mb="md"
         className={classes.volver}
       >
-        Volver al perfil
+        {textoVolver}
       </Button>
 
       {cargando ? (
