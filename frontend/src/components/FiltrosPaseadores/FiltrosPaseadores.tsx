@@ -10,10 +10,9 @@ export interface FiltrosState {
 
 interface FiltrosPaseadoresProps {
   filtros: FiltrosState;
+  comunas: string[];
   onFiltroChange: (campo: keyof FiltrosState, valor: string | number) => void;
 }
-
-const COMUNAS = ["Todas", "Providencia", "Ñuñoa", "Quilicura", "Santiago Centro", "Las Condes"];
 
 const ESTRELLAS = [
   { value: "0", label: "Cualquiera" },
@@ -22,7 +21,7 @@ const ESTRELLAS = [
   { value: "4.5", label: "4.5+ ⭐" },
 ];
 
-const FiltrosPaseadores = ({ filtros, onFiltroChange }: FiltrosPaseadoresProps) => (
+const FiltrosPaseadores = ({ filtros, comunas, onFiltroChange }: FiltrosPaseadoresProps) => (
   <div className={classes.filtros}>
     <div className={classes.filtro}>
       <label htmlFor="busqueda">Buscar:</label>
@@ -38,7 +37,7 @@ const FiltrosPaseadores = ({ filtros, onFiltroChange }: FiltrosPaseadoresProps) 
       <label htmlFor="comuna">Comuna:</label>
       <NativeSelect
         id="comuna"
-        data={COMUNAS}
+        data={["Todas", ...comunas]}
         value={filtros.comuna}
         onChange={(e) => onFiltroChange("comuna", e.currentTarget.value)}
       />

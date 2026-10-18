@@ -16,7 +16,7 @@ const PaseadorCard = ({ paseador, usuario }: PaseadorCardProps) => (
       </Avatar>
       <div>
         <h3>{paseador.nombre}</h3>
-        <small>📍 {paseador.comuna}</small>
+        <small>📍 {paseador.zonas.join(", ") || "Sin comuna"}</small>
       </div>
     </Group>
 

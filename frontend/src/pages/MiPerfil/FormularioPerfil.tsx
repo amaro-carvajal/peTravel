@@ -6,7 +6,7 @@ import {
   NumberInput,
   Paper,
   Stack,
-  TagsInput,
+  MultiSelect,
   Text,
   Textarea,
   TextInput,
@@ -15,6 +15,7 @@ import {
 import { useState, type SubmitEvent } from "react";
 import axios from "axios";
 import walkerService from "../../services/walkers";
+import { COMUNAS_CHILE } from "../../data/comunasChile";
 import type { UsuarioData } from "../../types/data";
 import classes from "./FormularioPerfil.module.css";
 
@@ -84,7 +85,12 @@ const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
     }
 
     if (zonas.length === 0) {
-      setError("Agrega al menos una comuna o zona de cobertura.");
+      setError("Selecciona al menos una comuna de cobertura.");
+      return;
+    }
+
+    if (zonas.some((zona) => !COMUNAS_CHILE.includes(zona))) {
+      setError("Selecciona comunas del listado.");
       return;
     }
 
@@ -181,9 +187,12 @@ const FormularioPerfil = ({ usuario, onCreado }: FormularioPerfilProps) => {
               onChange={(e) => setDescripcion(e.currentTarget.value)}
             />
 
-            <TagsInput
-              label="Comunas o zonas de cobertura"
-              placeholder="Escribe una zona y presiona Enter"
+            <MultiSelect
+              label="Comunas de cobertura"
+              placeholder="Selecciona una o más comunas"
+              data={COMUNAS_CHILE}
+              searchable
+              nothingFoundMessage="No se encontraron comunas"
               required
               value={zonas}
               onChange={setZonas}

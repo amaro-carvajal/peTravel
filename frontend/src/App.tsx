@@ -108,8 +108,10 @@ const App = () => {
     setFiltros((prev) => ({ ...prev, [campo]: valor }));
   };
 
+  const comunas = [...new Set(paseadores.flatMap((paseador) => paseador.zonas))];
+
   const paseadoresAMostrar = paseadores.filter((paseador) => {
-    const coincideComuna = filtros.comuna === "Todas" || paseador.comuna === filtros.comuna;
+    const coincideComuna = filtros.comuna === "Todas" || paseador.zonas.includes(filtros.comuna);
     const termino = filtros.busqueda.toLowerCase();
     const coincideTexto =
       paseador.nombre.toLowerCase().includes(termino) ||
@@ -154,7 +156,7 @@ const App = () => {
                   </Group>
                 </Paper>
               )}
-              <FiltrosPaseadores filtros={filtros} onFiltroChange={handleFiltroChange} />
+              <FiltrosPaseadores filtros={filtros} comunas={comunas} onFiltroChange={handleFiltroChange} />
 
               <Paper component="section" className={classes.panel}>
                 <Group justify="space-between" className={classes.header}>
