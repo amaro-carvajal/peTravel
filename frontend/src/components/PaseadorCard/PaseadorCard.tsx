@@ -47,6 +47,7 @@ const PaseadorCard = ({ paseador, usuario }: PaseadorCardProps) => (
           fullWidth
           component={Link}
           to={`/paseadores/${paseador.id}/agendar`}
+          state={{ from: "/" }}
           className={classes.agendar}
         >
           Agendar paseo
