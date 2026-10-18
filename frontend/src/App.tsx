@@ -3,9 +3,10 @@ import { Badge, Center, Container, Group, Loader, Paper, Text, Title } from "@ma
 import type { PaseadorData, UsuarioData } from "./types/data";
 import walkerService from "./services/walkers";
 import authService from "./services/auth";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
 import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
+import MiPerfil from "./pages/MiPerfil/MiPerfil";
 import Login from "./pages/Login/Login";
 import Registro from "./pages/Registro/Registro";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
@@ -13,6 +14,7 @@ import { Navbar } from "./components/Navbar";
 import classes from "./App.module.css";
 
 const App = () => {
+  const location = useLocation();
   const [usuario, setUsuario] = useState<UsuarioData | null>(null);
   const [paseadores, setPaseadores] = useState<PaseadorData[]>([]);
   const [cargando, setCargando] = useState<boolean>(true);
@@ -30,6 +32,10 @@ const App = () => {
       .getMe()
       .then((user) => setUsuario(user))
       .catch(() => setUsuario(null));
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname !== "/") return;
 
     walkerService
       .getAll()
@@ -42,7 +48,7 @@ const App = () => {
         setError("No se pudo conectar con el servidor para cargar los paseadores.");
         setCargando(false);
       });
-  }, []);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await authService.logout();
@@ -107,6 +113,7 @@ const App = () => {
           }
         />
         <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
+        <Route path="/mi-perfil" element={<MiPerfil />} />
         <Route
           path="/login"
           element={usuario ? <Navigate to="/" /> : <Login onLoginSuccess={setUsuario} />}

@@ -90,4 +90,29 @@ const getById = async (id: string): Promise<PaseadorData> => {
   return adaptWalker(walkerRes.data, resenasAdaptadas);
 };
 
-export default { getAll, getById };
+const getMe = async (): Promise<PaseadorData> => {
+  const response = await axios.get(`${baseUrl}/me`);
+  return adaptWalker(response.data);
+};
+
+export interface NuevoPaseadorData {
+  name: string;
+  description: string;
+  coverageAreas: string[];
+  hourlyRate: number;
+  phone: string;
+  email: string;
+  photo?: string;
+  availability?: {
+    days: string[];
+    startTime: string;
+    endTime: string;
+  }[];
+}
+
+const create = async (paseador: NuevoPaseadorData): Promise<PaseadorData> => {
+  const response = await axios.post(baseUrl, paseador);
+  return adaptWalker(response.data);
+};
+
+export default { getAll, getById, getMe, create };

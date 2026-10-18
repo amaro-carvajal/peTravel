@@ -1,0 +1,32 @@
+.wrapper {
+  max-width: 640px;
+  margin: 48px auto;
+}
+
+.card {
+  padding: 32px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.06);
+  background: #ffffff;
+}
+
+.titulo {
+  color: #1e3a8a;
+  margin-bottom: 4px;
+}
+
+.subtitulo {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+.errorBox {
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.9rem;
+}

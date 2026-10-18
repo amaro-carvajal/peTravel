@@ -30,6 +30,17 @@ const Navbar = ({ usuario, onLogout }: NavbarProps) => (
               {usuario.rol === "owner" ? "Dueño" : "Paseador"}
             </Badge>
             <Text className={classes.userInfo}>{usuario.nombre}</Text>
+            {usuario.rol === "walker" && (
+              <Button
+                component={Link}
+                to="/mi-perfil"
+                variant="light"
+                color="blue"
+                size="sm"
+              >
+                Ver mi perfil
+              </Button>
+            )}
             <Button variant="white" color="blue" size="sm" onClick={onLogout}>
               Cerrar sesión
             </Button>

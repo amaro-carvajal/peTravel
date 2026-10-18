@@ -7,8 +7,13 @@ import walkerService from "../../services/walkers";
 
 const listProps = { listStyleType: "none", spacing: "xs", classNames: { item: classes.caja } } as const;
 
-const PaseadorPerfil = () => {
-  const { id } = useParams<{ id: string }>();
+interface PaseadorPerfilProps {
+  id?: string;
+}
+
+const PaseadorPerfil = ({ id: idProp }: PaseadorPerfilProps = {}) => {
+  const { id: idParam } = useParams<{ id: string }>();
+  const id = idProp ?? idParam;
   const [paseador, setPaseador] = useState<PaseadorData | null>(null);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

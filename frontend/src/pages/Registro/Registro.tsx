@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { Button, Container, NativeSelect, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
 import { Link, useNavigate } from "react-router-dom";
 import authService from "../../services/auth";
@@ -23,7 +23,7 @@ const Registro = ({ onLoginSuccess }: RegistroProps) => {
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
