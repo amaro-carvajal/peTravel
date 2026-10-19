@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt"; 
 import config from "./utils/config";
 import logger from "./utils/logger";
 import Walker from "./models/walker";
+import User from "./models/user";
+import Booking from "./models/booking";
+import Review from "./models/review";
 import type { WalkerDay } from "./models/walker";
 
 interface SampleWalker {
@@ -165,6 +169,58 @@ const sampleWalkers: SampleWalker[] = [
   },
 ];
 
+interface SampleReview {
+  author: string;
+  rating: number; // entero 1-5 (el modelo valida Number.isInteger)
+  comment: string;
+  date: string;
+}
+
+// Las llaves coinciden con el campo "name" de sampleWalkers
+const sampleReviews: Record<string, SampleReview[]> = {
+  "Carlos Pérez": [
+    { author: "María González", rating: 5, comment: "Muy puntual y mi perro lo adora. Totalmente recomendado.", date: "2026-08-12" },
+    { author: "Pedro Ramírez", rating: 4, comment: "Buen servicio en general, cumple con la hora estipulada.", date: "2026-08-28" },
+    { author: "Carla Espinoza", rating: 5, comment: "Lleva a mi perro a los parques de Providencia, llega muy feliz.", date: "2026-09-05" },
+  ],
+  "Ana Soto": [
+    { author: "Javiera Fuentes", rating: 5, comment: "Excelente trato, se nota la experiencia con gatos y perros.", date: "2026-08-02" },
+    { author: "Felipe Castro", rating: 5, comment: "Flexible con los horarios y muy comunicativa por WhatsApp.", date: "2026-08-15" },
+    { author: "Macarena Pino", rating: 5, comment: "Muy dedicada, aunque una vez se retrasó 10 minutos.", date: "2026-09-10" },
+  ],
+  "Diego Morales": [
+    { author: "Camila Rojas", rating: 5, comment: "Buen paseador, mi perrita llega feliz y cansada.", date: "2026-07-20" },
+    { author: "Nicolás Paredes", rating: 3, comment: "El paseo estuvo bien, pero canceló una vez a última hora.", date: "2026-08-05" },
+    { author: "Sebastián Vera", rating: 4, comment: "Buen recorrido por las plazas de Quilicura, a mi perro le agrada.", date: "2026-09-01" },
+  ],
+  "Valentina Castro": [
+    { author: "Martín Vargas", rating: 5, comment: "Excelente disposición, mi perro es ansioso y ella lo maneja perfecto.", date: "2026-08-15" },
+    { author: "Sofía Medina", rating: 4, comment: "Responsable. Me gustaría que mandara más fotos en el recorrido.", date: "2026-08-30" },
+    { author: "Jorge Valenzuela", rating: 5, comment: "Súper atenta a las indicaciones médicas de mi perrito mayor.", date: "2026-09-18" },
+  ],
+  "Javier Muñoz": [
+    { author: "Luis Aránguiz", rating: 5, comment: "Agotó a mi Husky. Excelente trabajo físico.", date: "2026-09-02" },
+    { author: "Andrea Riquelme", rating: 5, comment: "Muy profesional, recomendado para perros grandes y fuertes.", date: "2026-09-14" },
+    { author: "Tomás Reyes", rating: 5, comment: "Sabe usar arnés antitirones a la perfección.", date: "2026-09-16" },
+  ],
+  "Laura Rojas": [
+    { author: "Consuelo Valdés", rating: 5, comment: "Vale cada peso. Mi perro ya no tira la correa al caminar.", date: "2026-08-20" },
+    { author: "Patricio Guzmán", rating: 5, comment: "Impecable, es prácticamente una entrenadora canina.", date: "2026-09-18" },
+  ],
+  "Felipe Ibáñez": [
+    { author: "Roberto Silva", rating: 4, comment: "Sabe mucho, pero los paseos son muy lentos por la terapia.", date: "2026-08-10" },
+    { author: "Daniela Pavez", rating: 5, comment: "Ha ayudado mucho con la reactividad de mi perro hacia las motos.", date: "2026-09-05" },
+    { author: "Valentina Ortiz", rating: 5, comment: "Excelente profesional, aunque es un poco caro.", date: "2026-09-12" },
+  ],
+};
+
+const emailFromName = (name: string) =>
+  name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, ".") + "@seed.petravel.cl";
+
 const seed = async () => {
   try {
     if (!config.MONGODB_URI) {
@@ -174,13 +230,62 @@ const seed = async () => {
     await mongoose.connect(config.MONGODB_URI, { dbName: config.MONGODB_DBNAME || "petravel" });
     logger.info("Conectado a MongoDB para poblar datos...");
 
-    // Limpia paseadores existentes para no duplicar en cada ejecución
+    // Limpieza para no duplicar en cada ejecución
+    await Review.deleteMany({});
+    await Booking.deleteMany({});
+    await User.deleteMany({ email: /@seed\.petravel\.cl$/ });
     await Walker.deleteMany({});
-    logger.info("Colección de paseadores limpiada.");
+    logger.info("Colecciones limpiadas.");
 
-    // Inserta todos los paseadores de prueba
-    await Walker.insertMany(sampleWalkers);
-    logger.info(`¡Éxito! Se insertaron ${sampleWalkers.length} paseadores de prueba en MongoDB.`);
+    const walkers = await Walker.insertMany(sampleWalkers);
+    logger.info(`Se insertaron ${walkers.length} paseadores.`);
+
+    const authorNames = [
+      ...new Set(Object.values(sampleReviews).flatMap((reviews) => reviews.map((r) => r.author))),
+    ];
+    const passwordHash = await bcrypt.hash("password123", 10);
+    const authors = await User.insertMany(
+      authorNames.map((name) => ({
+        name,
+        email: emailFromName(name),
+        passwordHash,
+        role: "owner" as const,
+      }))
+    );
+    const authorIdByName = new Map(authors.map((u) => [u.name, u._id]));
+
+    let reviewCount = 0;
+    for (const walker of walkers) {
+      const reviews = sampleReviews[walker.name] ?? [];
+      if (reviews.length === 0) continue;
+
+      const bookings = await Booking.insertMany(
+        reviews.map((r) => ({
+          walker: walker._id,
+          owner: authorIdByName.get(r.author)!,
+          pet: new mongoose.Types.ObjectId(), 
+          date: new Date(r.date),
+          startTime: "10:00",
+          durationMinutes: 60,
+          pickupAddress: "Dirección de ejemplo 123",
+          totalPrice: walker.hourlyRate,
+          status: "completed" as const,
+        }))
+      );
+
+      await Review.insertMany(
+        reviews.map((r, i) => ({
+          walker: walker._id,
+          author: authorIdByName.get(r.author)!,
+          booking: bookings[i]._id,
+          rating: r.rating,
+          comment: r.comment,
+          createdAt: new Date(r.date), 
+        }))
+      );
+      reviewCount += reviews.length;
+    }
+    logger.info(`¡Éxito! Se insertaron ${authors.length} usuarios, ${reviewCount} reservas y ${reviewCount} reseñas.`);
 
     await mongoose.connection.close();
     process.exit(0);
