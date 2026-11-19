@@ -1,10 +1,11 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import { Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import classes from "./Login.module.css";
 
 const Login = () => {
+  const { search } = useLocation();
   const login = useAuthStore((state) => state.login);
   const cargando = useAuthStore((state) => state.cargando);
   const errorSesion = useAuthStore((state) =>
@@ -57,7 +58,7 @@ const Login = () => {
 
             <Text ta="center" size="sm" c="dimmed">
               ¿Aún no tienes cuenta?{" "}
-              <Link to="/registro" className={classes.link}>
+              <Link to={{ pathname: "/registro", search }} className={classes.link}>
                 Regístrate aquí
               </Link>
             </Text>

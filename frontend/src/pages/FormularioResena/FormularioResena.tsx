@@ -126,7 +126,7 @@ const FormularioResena = () => {
               {errorEnvio && <Alert color="red">{errorEnvio}</Alert>}
 
               <Group justify="flex-end">
-                <Button variant="outline" onClick={() => navigate(-1)}>Cancelar</Button>
+                <Button component={Link} to="/mis-paseos" variant="outline">Cancelar</Button>
                 <Button onClick={handleSubmit} disabled={!puedeEnviar} loading={enviando}>
                   Enviar reseña
                 </Button>

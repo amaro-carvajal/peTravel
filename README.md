@@ -29,3 +29,15 @@ npm install
 npm run seed
 npm run dev
 ```
+
+### Probar el build de producción localmente
+
+Con las dependencias ya instaladas y un `backend/.env` que apunte a MongoDB local, ejecuta desde la raíz:
+
+```bash
+npm --prefix frontend run build
+npm --prefix backend run build
+npm --prefix backend start
+```
+
+Express sirve la SPA y la API desde el mismo origen (`http://localhost:3001` por defecto). Puedes abrir directamente una ruta como `/mis-paseos`. Si la sesión está cerrada, la aplicación pedirá iniciar sesión y luego volverá a esa ruta. El proxy de Vite sigue disponible al usar `npm run dev` en `frontend/`.

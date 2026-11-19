@@ -71,9 +71,9 @@ const AgendarPaseo = () => {
   const [direccionRetiro, setDireccionRetiro] = useState("");
   const [notas, setNotas] = useState("");
   const location = useLocation();
-  const origen = (location.state as { from?: string } | null)?.from;
-  const rutaVolver = origen || (paseador ? `/paseadores/${paseador.id}` : "/");
-  const textoVolver = origen === "/" ? "Volver a paseadores" : "Volver al perfil";
+  const desdeListado = (location.state as { from?: string } | null)?.from === "/";
+  const rutaVolver = desdeListado || !id ? "/" : `/paseadores/${encodeURIComponent(id)}`;
+  const textoVolver = desdeListado ? "Volver a paseadores" : "Volver al perfil";
 
   useEffect(() => {
     if (!id) {

@@ -1,6 +1,6 @@
 import { useEffect, useState, type SubmitEvent } from "react";
 import { Button, Container, NativeSelect, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import type { RolUsuario } from "../../types/data";
 import classes from "../Login/Login.module.css";
@@ -11,6 +11,7 @@ const ROLES = [
 ];
 
 const Registro = () => {
+  const { search } = useLocation();
   const registro = useAuthStore((state) => state.registro);
   const cargando = useAuthStore((state) => state.cargando);
   const errorSesion = useAuthStore((state) =>
@@ -96,7 +97,7 @@ const Registro = () => {
 
             <Text ta="center" size="sm" c="dimmed">
               ¿Ya tienes una cuenta?{" "}
-              <Link to="/login" className={classes.link}>
+              <Link to={{ pathname: "/login", search }} className={classes.link}>
                 Inicia sesión
               </Link>
             </Text>

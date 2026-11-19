@@ -4,7 +4,7 @@ import type { MascotaData, PaseadorData } from "./types/data";
 import walkerService from "./services/walkers";
 import { useAuthStore } from "./stores/authStore";
 import petService from "./services/pets";
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
 import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
 import MiPerfil from "./pages/MiPerfil/MiPerfil";
@@ -17,6 +17,9 @@ import AgendarPaseo from "./pages/AgendarPaseo/AgendarPaseo";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
 import RegistrarMascota from "./pages/RegistrarMascota/RegistrarMascota";
 import { Navbar } from "./components/Navbar";
+import NotFound from "./pages/NotFound/NotFound";
+import { GuestRoute, ProtectedRoute } from "./routes/ProtectedRoute";
+import { rutasProtegidas } from "./routes/rutasProtegidas";
 import classes from "./App.module.css";
 
 const App = () => {
@@ -111,11 +114,14 @@ const App = () => {
     return coincideComuna && coincideTexto && coincideCalificacion && coincideTarifa;
   });
 
-  const cargandoSesion = (
-    <Center py="xl">
-      <Loader color="blue" />
-    </Center>
-  );
+  const paginasProtegidas = [
+    { ...rutasProtegidas.agendar, element: <AgendarPaseo /> },
+    { ...rutasProtegidas.perfil, element: <MiPerfil /> },
+    { ...rutasProtegidas.registrarMascota, element: <RegistrarMascota onMascotaRegistrada={handleMascotaRegistrada} /> },
+    { ...rutasProtegidas.mascotas, element: <MisMascotas /> },
+    { ...rutasProtegidas.paseos, element: <GestionPaseos /> },
+    { ...rutasProtegidas.resena, element: <FormularioResena /> },
+  ];
 
   return (
     <>
@@ -184,75 +190,17 @@ const App = () => {
             </Container>
           }
         />
-        <Route
-          path="/paseadores/:id/agendar"
-          element={
-            autenticando ? cargandoSesion : usuario?.rol === "owner" ? (
-              <AgendarPaseo />
-            ) : (
-              <Navigate to={usuario ? "/" : "/login"} replace />
-            )
-          }
-        />
         <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
-        <Route
-          path="/mi-perfil"
-          element={
-            autenticando ? cargandoSesion : usuario ? (
-              <MiPerfil />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route
-          path="/mascotas/nueva"
-          element={
-            autenticando ? cargandoSesion : usuario?.rol === "owner" ? (
-              <RegistrarMascota onMascotaRegistrada={handleMascotaRegistrada} />
-            ) : (
-              <Navigate to={usuario ? "/" : "/login"} />
-            )
-          }
-        />
-        <Route
-          path="/mis-mascotas"
-          element={
-            autenticando ? cargandoSesion : usuario?.rol === "owner" ? (
-              <MisMascotas />
-            ) : (
-              <Navigate to={usuario ? "/" : "/login"} />
-            )
-          }
-        />
-        <Route
-          path="/login"
-          element={autenticando ? cargandoSesion : usuario ? <Navigate to="/" /> : <Login />}
-        />
-        <Route
-          path="/registro"
-          element={autenticando ? cargandoSesion : usuario ? <Navigate to="/" /> : <Registro />}
-        />
-        <Route 
-          path="/mis-paseos"
-          element={
-            autenticando ? cargandoSesion : usuario ? (
-              <GestionPaseos />
-            ) : (
-              <Navigate to="/login" />
-            )
-          } 
-        />
-        <Route 
-          path="/paseos/:id/resena" 
-          element={
-            autenticando ? cargandoSesion : usuario ? (
-              <FormularioResena />
-            ) : (
-              <Navigate to="/login" />
-            )
-          } 
-        />
+        <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+        <Route path="/registro" element={<GuestRoute><Registro /></GuestRoute>} />
+        {paginasProtegidas.map(({ path, roles, element }) => (
+          <Route
+            key={path}
+            path={path}
+            element={<ProtectedRoute roles={roles}>{element}</ProtectedRoute>}
+          />
+        ))}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

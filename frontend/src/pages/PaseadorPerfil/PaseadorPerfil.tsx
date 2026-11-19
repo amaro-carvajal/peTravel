@@ -87,9 +87,7 @@ const PaseadorPerfil = ({ id: idProp, perfil, onEditar }: PaseadorPerfilProps = 
           <Stack gap="xl" p="xl" className={classes.body}>
             {rol !== "walker" && (
               <Group justify="flex-end">
-                <Button component={Link} to={`/paseadores/${paseador.id}/agendar`}
-                state={{ from: `/paseadores/${paseador.id}/agendar` }}
-                >
+                <Button component={Link} to={`/paseadores/${paseador.id}/agendar`}>
                   Agendar paseo
                 </Button>
               </Group>
