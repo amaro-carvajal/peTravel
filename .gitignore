@@ -29,3 +29,10 @@ dist-ssr/
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright
+/e2etests/playwright-report/
+/e2etests/test-results/
+/e2etests/playwright/.cache/
+/e2etests/playwright/.auth/
+/e2etests/.env.*

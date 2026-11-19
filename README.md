@@ -41,3 +41,7 @@ npm --prefix backend start
 ```
 
 Express sirve la SPA y la API desde el mismo origen (`http://localhost:3001` por defecto). Puedes abrir directamente una ruta como `/mis-paseos`. Si la sesión está cerrada, la aplicación pedirá iniciar sesión y luego volverá a esa ruta. El proxy de Vite sigue disponible al usar `npm run dev` en `frontend/`.
+
+### Pruebas end-to-end
+
+La suite Playwright se ejecuta contra el build de producción servido por Express y una instancia temporal de MongoDB. Consulta la [guía de pruebas E2E](e2etests/README.md) para instalar Chromium, ejecutar la suite y abrir el reporte.

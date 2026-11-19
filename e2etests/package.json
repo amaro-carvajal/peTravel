@@ -1,0 +1,18 @@
+{
+  "name": "petravel-e2etests",
+  "private": true,
+  "scripts": {
+    "pretest": "npm run build:app",
+    "test": "playwright test",
+    "pretest:ui": "npm run build:app",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "build:app": "npm --prefix ../frontend run build && npm --prefix ../backend run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}
