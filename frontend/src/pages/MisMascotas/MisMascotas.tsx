@@ -7,6 +7,7 @@ import {
   Container,
   Group,
   Loader,
+  Modal,
   Paper,
   SimpleGrid,
   Stack,
@@ -31,13 +32,16 @@ const MisMascotas = () => {
   const [mascotas, setMascotas] = useState<MascotaData[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mascotaRegistrada, setMascotaRegistrada] = useState<string | null>(null);
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
+  const [mascotaAEliminar, setMascotaAEliminar] = useState<MascotaData | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
   useEffect(() => {
-    const state = location.state as { mascotaRegistrada?: string } | null;
-    if (!state?.mascotaRegistrada) return;
+    const state = location.state as { mensajeMascota?: string } | null;
+    if (!state?.mensajeMascota) return;
 
-    setMascotaRegistrada(state.mascotaRegistrada);
+    setMensaje(state.mensajeMascota);
     navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, location.state, navigate]);
 
@@ -61,6 +65,24 @@ const MisMascotas = () => {
     };
   }, []);
 
+  const eliminarMascota = async () => {
+    if (!mascotaAEliminar || eliminando) return;
+
+    setEliminando(true);
+    setErrorEliminar(null);
+    setMensaje(null);
+    try {
+      await petService.remove(mascotaAEliminar.id);
+      setMascotas((actuales) => actuales.filter(({ id }) => id !== mascotaAEliminar.id));
+      setMensaje(`${mascotaAEliminar.nombre} se eliminó correctamente.`);
+    } catch (err: unknown) {
+      setErrorEliminar(mensajeError(err, "No se pudo eliminar la mascota."));
+    } finally {
+      setEliminando(false);
+      setMascotaAEliminar(null);
+    }
+  };
+
   return (
     <Container component="main" size={1000} className={classes.wrapper}>
       <Paper className={classes.panel}>
@@ -78,17 +100,13 @@ const MisMascotas = () => {
           </Button>
         </Group>
 
-        {mascotaRegistrada && (
-          <Alert
-            color="green"
-            title="¡Mascota registrada correctamente!"
-            withCloseButton
-            onClose={() => setMascotaRegistrada(null)}
-            mb="md"
-          >
-            {mascotaRegistrada} ya está en tu lista de mascotas.
+        {mensaje && (
+          <Alert color="green" role="status" withCloseButton closeButtonLabel="Cerrar mensaje"
+            onClose={() => setMensaje(null)} mb="md">
+            {mensaje}
           </Alert>
         )}
+        {errorEliminar && <Alert color="red" role="alert" mb="md">{errorEliminar}</Alert>}
 
         {cargando ? (
           <Center py="xl">
@@ -120,11 +138,43 @@ const MisMascotas = () => {
                     {mascota.notas}
                   </Text>
                 )}
+                <Group mt="md" gap="xs">
+                  <Button component={Link} to={`/mascotas/${mascota.id}/editar`}
+                    variant="light" size="xs" aria-label={`Editar a ${mascota.nombre}`}>
+                    Editar
+                  </Button>
+                  <Button variant="outline" color="red" size="xs"
+                    aria-label={`Eliminar a ${mascota.nombre}`}
+                    onClick={() => setMascotaAEliminar(mascota)}>
+                    Eliminar
+                  </Button>
+                </Group>
               </Paper>
             ))}
           </SimpleGrid>
         )}
       </Paper>
+
+      <Modal
+        opened={mascotaAEliminar !== null}
+        onClose={() => setMascotaAEliminar(null)}
+        title="Eliminar mascota"
+        centered
+        withCloseButton={false}
+        closeOnClickOutside={!eliminando}
+        closeOnEscape={!eliminando}
+      >
+        <Text>¿Quieres eliminar a {mascotaAEliminar?.nombre} de tu lista?</Text>
+        <Group justify="flex-end" mt="md">
+          <Button data-autofocus variant="default" disabled={eliminando}
+            onClick={() => setMascotaAEliminar(null)}>
+            Cancelar
+          </Button>
+          <Button color="red" loading={eliminando} onClick={eliminarMascota}>
+            Confirmar eliminación
+          </Button>
+        </Group>
+      </Modal>
     </Container>
   );
 };

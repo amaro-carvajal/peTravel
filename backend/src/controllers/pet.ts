@@ -3,6 +3,7 @@ import Pet from "../models/pet";
 import Walker from "../models/walker";
 import Booking from "../models/booking";
 import middleware from "../utils/middleware";
+import { withPetLock } from "../utils/petLock";
 
 const router = express.Router();
 
@@ -190,20 +191,33 @@ router.delete("/:id", middleware.withUser, middleware.requireRole("owner"), asyn
     return;
   }
 
-  const pet = await Pet.findById(request.params.id);
-
-  if (!pet) {
-    response.status(404).json({ error: "Mascota no encontrada" });
+  const { id } = request.params;
+  if (typeof id !== "string") {
+    response.status(400).json({ error: "ID de mascota inválido" });
     return;
   }
 
-  if (pet.owner.toString() !== request.userId) {
-    response.status(403).json({ error: "No puedes eliminar esta mascota" });
-    return;
-  }
+  await withPetLock(id, async () => {
+    const pet = await Pet.findById(id);
 
-  await Pet.findByIdAndDelete(request.params.id);
-  response.status(204).end();
+    if (!pet) {
+      response.status(404).json({ error: "Mascota no encontrada" });
+      return;
+    }
+
+    if (pet.owner.toString() !== request.userId) {
+      response.status(403).json({ error: "No puedes eliminar esta mascota" });
+      return;
+    }
+
+    if (await Booking.exists({ pet: pet._id })) {
+      response.status(409).json({ error: "No puedes eliminar una mascota vinculada a reservas" });
+      return;
+    }
+
+    await pet.deleteOne();
+    response.status(204).end();
+  });
 });
 
 export default router;

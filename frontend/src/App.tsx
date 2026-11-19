@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Badge, Button, Center, Container, Group, Loader, Paper, Text, Title } from "@mantine/core";
-import type { MascotaData, PaseadorData } from "./types/data";
+import type { PaseadorData } from "./types/data";
 import walkerService from "./services/walkers";
 import { useAuthStore } from "./stores/authStore";
 import petService from "./services/pets";
-import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Link, Route, Routes, useLocation } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
 import PaseadorPerfil from "./pages/PaseadorPerfil/PaseadorPerfil";
 import MiPerfil from "./pages/MiPerfil/MiPerfil";
@@ -24,11 +24,10 @@ import classes from "./App.module.css";
 
 const App = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const usuario = useAuthStore((state) => state.usuario);
   const autenticando = useAuthStore((state) => state.inicializando);
   const restaurarSesion = useAuthStore((state) => state.restaurarSesion);
-  const [misMascotas, setMisMascotas] = useState<MascotaData[]>([]);
+  const [cantidadMascotas, setCantidadMascotas] = useState(0);
   const [estadoMascotas, setEstadoMascotas] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [paseadores, setPaseadores] = useState<PaseadorData[]>([]);
   const [cargando, setCargando] = useState<boolean>(true);
@@ -46,10 +45,10 @@ const App = () => {
   }, [restaurarSesion]);
 
   useEffect(() => {
-    if (autenticando) return;
+    if (autenticando || location.pathname !== "/") return;
 
     if (!usuario || usuario.rol !== "owner") {
-      setMisMascotas([]);
+      setCantidadMascotas(0);
       setEstadoMascotas("idle");
       return;
     }
@@ -61,7 +60,7 @@ const App = () => {
       .getAll()
       .then((mascotas) => {
         if (cancelado) return;
-        setMisMascotas(mascotas);
+        setCantidadMascotas(mascotas.length);
         setEstadoMascotas("loaded");
       })
       .catch(() => {
@@ -72,13 +71,7 @@ const App = () => {
     return () => {
       cancelado = true;
     };
-  }, [autenticando, usuario]);
-
-  const handleMascotaRegistrada = (mascota: MascotaData) => {
-    setMisMascotas((actuales) => [...actuales, mascota]);
-    setEstadoMascotas("loaded");
-    navigate("/mis-mascotas", { state: { mascotaRegistrada: mascota.nombre } });
-  };
+  }, [autenticando, usuario, location.pathname]);
 
   useEffect(() => {
     if (location.pathname !== "/") return;
@@ -117,7 +110,8 @@ const App = () => {
   const paginasProtegidas = [
     { ...rutasProtegidas.agendar, element: <AgendarPaseo /> },
     { ...rutasProtegidas.perfil, element: <MiPerfil /> },
-    { ...rutasProtegidas.registrarMascota, element: <RegistrarMascota onMascotaRegistrada={handleMascotaRegistrada} /> },
+    { ...rutasProtegidas.registrarMascota, element: <RegistrarMascota /> },
+    { ...rutasProtegidas.editarMascota, element: <RegistrarMascota /> },
     { ...rutasProtegidas.mascotas, element: <MisMascotas /> },
     { ...rutasProtegidas.paseos, element: <GestionPaseos /> },
     { ...rutasProtegidas.resena, element: <FormularioResena /> },
@@ -135,7 +129,7 @@ const App = () => {
                 (!usuario ||
                   (usuario.rol === "owner" &&
                     estadoMascotas === "loaded" &&
-                    misMascotas.length === 0)) && (
+                    cantidadMascotas === 0)) && (
                 <Paper className={classes.mascotaBanner}>
                   <Group justify="space-between" align="center">
                     <div>

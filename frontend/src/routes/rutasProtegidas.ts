@@ -8,6 +8,7 @@ export const rutasProtegidas = {
   agendar: { path: "/paseadores/:id/agendar", roles: owner },
   perfil: { path: "/mi-perfil", roles: walker },
   registrarMascota: { path: "/mascotas/nueva", roles: owner },
+  editarMascota: { path: "/mascotas/:id/editar", roles: owner },
   mascotas: { path: "/mis-mascotas", roles: owner },
   paseos: { path: "/mis-paseos", roles: ["owner", "walker"] },
   resena: { path: "/paseos/:id/resena", roles: owner },

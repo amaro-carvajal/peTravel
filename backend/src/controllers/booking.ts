@@ -4,6 +4,7 @@ import Booking from "../models/booking";
 import Pet from "../models/pet";
 import Walker from "../models/walker";
 import middleware from "../utils/middleware";
+import { withPetLock } from "../utils/petLock";
 import { BLOCKING_STATUSES, bookingDay, dayRange, validateBookingSlot } from "../utils/availability";
 
 const router = express.Router();
@@ -122,38 +123,40 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
     return;
   }
 
-  const selectedPet = await Pet.findById(pet);
+  await withPetLock(pet, async () => {
+    const selectedPet = await Pet.findById(pet);
 
-  if (!selectedPet) {
-    response.status(404).json({ error: "Mascota no encontrada" });
-    return;
-  }
+    if (!selectedPet) {
+      response.status(404).json({ error: "Mascota no encontrada" });
+      return;
+    }
 
-  if (selectedPet.owner.toString() !== request.userId) {
-    response.status(403).json({ error: "La mascota no te pertenece" });
-    return;
-  }
+    if (selectedPet.owner.toString() !== request.userId) {
+      response.status(403).json({ error: "La mascota no te pertenece" });
+      return;
+    }
 
-  const slotError = await validateBookingSlot(walker, new Date(date), startTime, durationMinutes);
-  if (slotError) {
-    response.status(slotError.status).json({ error: slotError.error });
-    return;
-  }
+    const slotError = await validateBookingSlot(walker, new Date(date), startTime, durationMinutes);
+    if (slotError) {
+      response.status(slotError.status).json({ error: slotError.error });
+      return;
+    }
 
-  const booking = new Booking({
-    owner: request.userId,
-    pet,
-    walker,
-    date: new Date(date),
-    startTime,
-    durationMinutes,
-    pickupAddress,
-    notes,
-    totalPrice,
+    const booking = new Booking({
+      owner: request.userId,
+      pet,
+      walker,
+      date: new Date(date),
+      startTime,
+      durationMinutes,
+      pickupAddress,
+      notes,
+      totalPrice,
+    });
+
+    const savedBooking = await booking.save();
+    response.status(201).json(savedBooking);
   });
-
-  const savedBooking = await booking.save();
-  response.status(201).json(savedBooking);
 });
 
 router.put("/:id", middleware.withUser, async (request, response) => {
