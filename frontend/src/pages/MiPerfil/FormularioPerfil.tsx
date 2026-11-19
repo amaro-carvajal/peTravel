@@ -15,13 +15,13 @@ import {
 } from "@mantine/core";
 import { useState, type SubmitEvent } from "react";
 import axios from "axios";
+import { useAuthStore } from "../../stores/authStore";
 import walkerService, { type ActualizarPaseadorData, type PerfilPaseadorData } from "../../services/walkers";
 import { COMUNAS_CHILE } from "../../data/comunasChile";
-import type { BackendAvailability, UsuarioData } from "../../types/data";
+import type { BackendAvailability } from "../../types/data";
 import classes from "./FormularioPerfil.module.css";
 
 interface FormularioPerfilProps {
-  usuario: UsuarioData | null;
   perfil: PerfilPaseadorData | null;
   onGuardado: (perfil: PerfilPaseadorData) => void;
   onCancelar?: () => void;
@@ -57,7 +57,8 @@ const validarBloque = (bloque: BloqueHorario): string | null => {
   return null;
 };
 
-const FormularioPerfil = ({ usuario, perfil, onGuardado, onCancelar }: FormularioPerfilProps) => {
+const FormularioPerfil = ({ perfil, onGuardado, onCancelar }: FormularioPerfilProps) => {
+  const usuario = useAuthStore((state) => state.usuario);
   const [descripcion, setDescripcion] = useState(perfil?.descripcion ?? "");
   const [zonas, setZonas] = useState<string[]>(perfil?.zonas ?? []);
   const [tarifa, setTarifa] = useState<number | string>(perfil?.tarifa ?? "");

@@ -60,9 +60,10 @@ const getMe = async (): Promise<UsuarioData> => {
 const logout = async (): Promise<void> => {
   try {
     await axios.post(`${baseUrl}/logout`);
-  } finally {
-    setCsrfToken(null);
+  } catch (err: unknown) {
+    if (!axios.isAxiosError(err) || err.response?.status !== 401) throw err;
   }
+  setCsrfToken(null);
 };
 
 export default { login, register, getMe, logout };

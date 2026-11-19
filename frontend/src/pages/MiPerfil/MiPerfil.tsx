@@ -2,15 +2,10 @@ import { Center, Container, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import walkerService, { type PerfilPaseadorData } from "../../services/walkers";
-import type { UsuarioData } from "../../types/data";
 import FormularioPerfil from "./FormularioPerfil";
 import PaseadorPerfil from "../PaseadorPerfil/PaseadorPerfil";
 
-interface MiPerfilProps {
-  usuario: UsuarioData | null;
-}
-
-const MiPerfil = ({ usuario }: MiPerfilProps) => {
+const MiPerfil = () => {
   const [perfil, setPerfil] = useState<PerfilPaseadorData | null>(null);
   const [editando, setEditando] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -51,13 +46,12 @@ const MiPerfil = ({ usuario }: MiPerfilProps) => {
   }
 
   if (perfil && !editando) {
-    return <PaseadorPerfil perfil={perfil} usuario={usuario} onEditar={() => setEditando(true)} />;
+    return <PaseadorPerfil perfil={perfil} onEditar={() => setEditando(true)} />;
   }
 
   return (
     <FormularioPerfil
       key={perfil?.id ?? "nuevo"}
-      usuario={usuario}
       perfil={perfil}
       onGuardado={(guardado) => {
         setPerfil(guardado);

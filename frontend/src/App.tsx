@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Badge, Button, Center, Container, Group, Loader, Paper, Text, Title } from "@mantine/core";
-import type { MascotaData, PaseadorData, UsuarioData } from "./types/data";
+import type { MascotaData, PaseadorData } from "./types/data";
 import walkerService from "./services/walkers";
-import authService from "./services/auth";
+import { useAuthStore } from "./stores/authStore";
 import petService from "./services/pets";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { PaseadorCard } from "./components/PaseadorCard";
@@ -22,8 +22,9 @@ import classes from "./App.module.css";
 const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [usuario, setUsuario] = useState<UsuarioData | null>(null);
-  const [autenticando, setAutenticando] = useState<boolean>(true);
+  const usuario = useAuthStore((state) => state.usuario);
+  const autenticando = useAuthStore((state) => state.inicializando);
+  const restaurarSesion = useAuthStore((state) => state.restaurarSesion);
   const [misMascotas, setMisMascotas] = useState<MascotaData[]>([]);
   const [estadoMascotas, setEstadoMascotas] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [paseadores, setPaseadores] = useState<PaseadorData[]>([]);
@@ -38,12 +39,8 @@ const App = () => {
   });
 
   useEffect(() => {
-    authService
-      .getMe()
-      .then((user) => setUsuario(user))
-      .catch(() => setUsuario(null))
-      .finally(() => setAutenticando(false));
-  }, []);
+    void restaurarSesion();
+  }, [restaurarSesion]);
 
   useEffect(() => {
     if (autenticando) return;
@@ -96,14 +93,6 @@ const App = () => {
       });
   }, [location.pathname]);
 
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } finally {
-      setUsuario(null);
-    }
-  };
-
   const handleFiltroChange = (campo: keyof FiltrosState, valor: string | number) => {
     setFiltros((prev) => ({ ...prev, [campo]: valor }));
   };
@@ -122,9 +111,15 @@ const App = () => {
     return coincideComuna && coincideTexto && coincideCalificacion && coincideTarifa;
   });
 
+  const cargandoSesion = (
+    <Center py="xl">
+      <Loader color="blue" />
+    </Center>
+  );
+
   return (
     <>
-      <Navbar usuario={usuario} onLogout={handleLogout} />
+      <Navbar />
       <Routes>
         <Route
           path="/"
@@ -177,7 +172,7 @@ const App = () => {
                 ) : paseadoresAMostrar.length > 0 ? (
                   <div className={classes.grid}>
                     {paseadoresAMostrar.map((paseador) => (
-                      <PaseadorCard key={paseador.id} paseador={paseador} usuario={usuario} />
+                      <PaseadorCard key={paseador.id} paseador={paseador} />
                     ))}
                   </div>
                 ) : (
@@ -192,27 +187,19 @@ const App = () => {
         <Route
           path="/paseadores/:id/agendar"
           element={
-            autenticando ? (
-              <Center py="xl">
-                <Loader color="blue" />
-              </Center>
-            ) : usuario?.rol === "owner" ? (
+            autenticando ? cargandoSesion : usuario?.rol === "owner" ? (
               <AgendarPaseo />
             ) : (
               <Navigate to={usuario ? "/" : "/login"} replace />
             )
           }
         />
-        <Route path="/paseadores/:id" element={<PaseadorPerfil usuario={usuario} />} />
+        <Route path="/paseadores/:id" element={<PaseadorPerfil />} />
         <Route
           path="/mi-perfil"
           element={
-            autenticando ? (
-              <Center py="xl">
-                <Loader color="blue" />
-              </Center>
-            ) : usuario ? (
-              <MiPerfil usuario={usuario} />
+            autenticando ? cargandoSesion : usuario ? (
+              <MiPerfil />
             ) : (
               <Navigate to="/login" />
             )
@@ -221,11 +208,7 @@ const App = () => {
         <Route
           path="/mascotas/nueva"
           element={
-            autenticando ? (
-              <Center py="xl">
-                <Loader color="blue" />
-              </Center>
-            ) : usuario?.rol === "owner" ? (
+            autenticando ? cargandoSesion : usuario?.rol === "owner" ? (
               <RegistrarMascota onMascotaRegistrada={handleMascotaRegistrada} />
             ) : (
               <Navigate to={usuario ? "/" : "/login"} />
@@ -235,11 +218,7 @@ const App = () => {
         <Route
           path="/mis-mascotas"
           element={
-            autenticando ? (
-              <Center py="xl">
-                <Loader color="blue" />
-              </Center>
-            ) : usuario?.rol === "owner" ? (
+            autenticando ? cargandoSesion : usuario?.rol === "owner" ? (
               <MisMascotas />
             ) : (
               <Navigate to={usuario ? "/" : "/login"} />
@@ -248,21 +227,17 @@ const App = () => {
         />
         <Route
           path="/login"
-          element={usuario ? <Navigate to="/" /> : <Login onLoginSuccess={setUsuario} />}
+          element={autenticando ? cargandoSesion : usuario ? <Navigate to="/" /> : <Login />}
         />
         <Route
           path="/registro"
-          element={usuario ? <Navigate to="/" /> : <Registro onLoginSuccess={setUsuario} />}
+          element={autenticando ? cargandoSesion : usuario ? <Navigate to="/" /> : <Registro />}
         />
         <Route 
           path="/mis-paseos"
           element={
-            autenticando ? (
-              <Center py="xl">
-                <Loader color="blue" />
-              </Center>
-            ) : usuario ? (
-              <GestionPaseos usuario={usuario} />
+            autenticando ? cargandoSesion : usuario ? (
+              <GestionPaseos />
             ) : (
               <Navigate to="/login" />
             )
@@ -271,11 +246,7 @@ const App = () => {
         <Route 
           path="/paseos/:id/resena" 
           element={
-            autenticando ? (
-              <Center py="xl">
-                <Loader color="blue" />
-              </Center>
-            ) : usuario ? (
+            autenticando ? cargandoSesion : usuario ? (
               <FormularioResena />
             ) : (
               <Navigate to="/login" />

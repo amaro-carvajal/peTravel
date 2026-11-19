@@ -5,6 +5,7 @@ import bookingService from "../../services/booking";
 import { mensajeError } from "../../services/http";
 import petService from "../../services/pets";
 import walkerService, { type PerfilPaseadorData } from "../../services/walkers";
+import { useBookingsStore } from "../../stores/bookingsStore";
 import type { HorarioOcupado, MascotaData, NuevaReservaData } from "../../types/data";
 import { generarHorasDisponibles } from "../../utils/disponibilidad";
 import { formatearPrecio } from "../../utils/formato";
@@ -55,7 +56,12 @@ const AgendarPaseo = () => {
   const [revisionHorarios, setRevisionHorarios] = useState(0);
   const [mascotas, setMascotas] = useState<MascotaData[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [enviando, setEnviando] = useState(false);
+  const crear = useBookingsStore((state) => state.crear);
+  const enviando = useBookingsStore((state) => state.accion === "crear");
+  const modificando = useBookingsStore((state) => state.accion !== null);
+  const errorCreacion = useBookingsStore((state) =>
+    state.errorAccion?.tipo === "crear" ? state.errorAccion.mensaje : null);
+  const limpiarErrorAccion = useBookingsStore((state) => state.limpiarErrorAccion);
   const [error, setError] = useState<string | null>(null);
   const [solicitudEnviada, setSolicitudEnviada] = useState(false);
   const [mascotaId, setMascotaId] = useState("");
@@ -180,8 +186,10 @@ const AgendarPaseo = () => {
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    limpiarErrorAccion();
 
-    if (!paseador || !mascotaId) {
+    const mascota = mascotas.find((item) => item.id === mascotaId);
+    if (!paseador || !mascota) {
       setError("Selecciona una mascota para continuar.");
       return;
     }
@@ -196,7 +204,6 @@ const AgendarPaseo = () => {
       return;
     }
 
-    setEnviando(true);
     const reserva: NuevaReservaData = {
       mascotaId,
       paseadorId: paseador.id,
@@ -208,17 +215,16 @@ const AgendarPaseo = () => {
       precioTotal,
     };
 
-    try {
-      await bookingService.create(reserva);
+    const creada = await crear(reserva, mascota, paseador.nombre);
+    if (creada === true) {
       setSolicitudEnviada(true);
-    } catch (err: unknown) {
-      setError(mensajeError(err, "No se pudo enviar la solicitud de paseo."));
+    } else if (creada === false) {
       setHoraInicio("");
       setRevisionHorarios((revision) => revision + 1);
-    } finally {
-      setEnviando(false);
     }
   };
+
+  const errorFormulario = error ?? errorCreacion;
 
   return (
     <Container component="main" size={760} className={classes.wrapper}>
@@ -271,7 +277,7 @@ const AgendarPaseo = () => {
 
           <form onSubmit={handleSubmit}>
             <Stack gap="md">
-              {error && <Alert color="red">{error}</Alert>}
+              {errorFormulario && <Alert color="red">{errorFormulario}</Alert>}
 
               <NativeSelect
                 label="Mascota"
@@ -428,7 +434,7 @@ const AgendarPaseo = () => {
                 <Text fw={700} c="#1e3a8a">{formatearPrecio(precioTotal)}</Text>
               </Group>
 
-              <Button type="submit" loading={enviando} disabled={!horariosListos || !horasDisponibles.includes(horaInicio)} fullWidth>
+              <Button type="submit" loading={enviando} disabled={modificando || !horariosListos || !horasDisponibles.includes(horaInicio)} fullWidth>
                 Enviar solicitud de paseo
               </Button>
             </Stack>

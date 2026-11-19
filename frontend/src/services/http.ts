@@ -7,9 +7,10 @@ export const authConfig = () => {
 
 // Saca el mensaje { error: "..." } que devuelve el backend
 export const mensajeError = (err: unknown, porDefecto: string): string => {
-  if (axios.isAxiosError(err)) {
+  if (axios.isAxiosError<{ error?: unknown }>(err)) {
     if (err.response?.status === 401) return "Debes iniciar sesión para ver esto.";
-    return err.response?.data?.error ?? porDefecto;
+    const mensaje = err.response?.data?.error;
+    return typeof mensaje === "string" ? mensaje : porDefecto;
   }
   return porDefecto;
 };

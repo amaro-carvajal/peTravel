@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Alert, Avatar, Badge, Button, Center, Container, Group, Loader, Paper, SimpleGrid, Tabs, Text, Title } from "@mantine/core";
-import bookingService from "../../services/bookings";
-import { mensajeError } from "../../services/http";
-import type { EstadoPaseo, PaseoData, UsuarioData } from "../../types/data";
+import { useAuthStore } from "../../stores/authStore";
+import { useBookingsStore } from "../../stores/bookingsStore";
+import type { EstadoPaseo, PaseoData } from "../../types/data";
 import { formatearDuracion, formatearFecha, formatearPrecio } from "../../utils/formato";
 import classes from "./GestionPaseos.module.css";
 import { Link } from "react-router-dom";
@@ -15,40 +15,21 @@ const ETIQUETA_ESTADO: Record<EstadoPaseo, string> = {
   cancelled: "Cancelado",
 };
 
-interface GestionPaseosProps {
-  usuario?: UsuarioData | null;
-}
-
-const GestionPaseos = ({ usuario }: GestionPaseosProps) => {
-  const esWalker = usuario?.rol === "walker";
-  const [paseos, setPaseos] = useState<PaseoData[]>([]);
-  const [cargando, setCargando] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [errorAccion, setErrorAccion] = useState<string | null>(null);
+const GestionPaseos = () => {
+  const esWalker = useAuthStore((state) => state.usuario?.rol === "walker");
+  const paseos = useBookingsStore((state) => state.paseos);
+  const cargando = useBookingsStore((state) => state.cargando);
+  const error = useBookingsStore((state) => state.error);
+  const errorAccion = useBookingsStore((state) =>
+    state.errorAccion?.tipo === "actualizar" ? state.errorAccion.mensaje : null);
+  const modificando = useBookingsStore((state) => state.accion !== null);
+  const cargar = useBookingsStore((state) => state.cargar);
+  const cambiarEstado = useBookingsStore((state) => state.cambiarEstado);
+  const limpiarErrorAccion = useBookingsStore((state) => state.limpiarErrorAccion);
 
   useEffect(() => {
-    bookingService
-      .getAll()
-      .then((data) => {
-        setPaseos(data);
-        setCargando(false);
-      })
-      .catch((err) => {
-        console.error("Error al obtener paseos:", err);
-        setError(mensajeError(err, "No se pudieron cargar tus paseos."));
-        setCargando(false);
-      });
-  }, []);
-
-  const cambiarEstado = async (id: string, estado: EstadoPaseo) => {
-    setErrorAccion(null);
-    try {
-      const nuevoEstado = await bookingService.updateStatus(id, estado);
-      setPaseos((prev) => prev.map((p) => (p.id === id ? { ...p, estado: nuevoEstado } : p)));
-    } catch (err) {
-      setErrorAccion(mensajeError(err, "No se pudo actualizar el paseo."));
-    }
-  };
+    void cargar();
+  }, [cargar]);
 
   const solicitudes = paseos.filter((p) => p.estado === "pending");
   const historial = paseos
@@ -68,7 +49,7 @@ const GestionPaseos = ({ usuario }: GestionPaseosProps) => {
         </Group>
 
         {errorAccion && (
-          <Alert color="red" mb="md" withCloseButton onClose={() => setErrorAccion(null)}>
+          <Alert color="red" mb="md" withCloseButton onClose={limpiarErrorAccion}>
             {errorAccion}
           </Alert>
         )}
@@ -111,13 +92,13 @@ const GestionPaseos = ({ usuario }: GestionPaseosProps) => {
 
                       {esWalker ? (
                         <Group grow>
-                          <Button onClick={() => cambiarEstado(p.id, "accepted")}>Aceptar</Button>
-                          <Button variant="outline" color="red" onClick={() => cambiarEstado(p.id, "rejected")}>
+                          <Button disabled={modificando} onClick={() => cambiarEstado(p.id, "accepted")}>Aceptar</Button>
+                          <Button variant="outline" color="red" disabled={modificando} onClick={() => cambiarEstado(p.id, "rejected")}>
                             Rechazar
                           </Button>
                         </Group>
                       ) : (
-                        <Button fullWidth variant="outline" color="red" onClick={() => cambiarEstado(p.id, "cancelled")}>
+                        <Button fullWidth variant="outline" color="red" disabled={modificando} onClick={() => cambiarEstado(p.id, "cancelled")}>
                           Cancelar solicitud
                         </Button>
                       )}
@@ -148,6 +129,8 @@ interface HistorialListaProps {
 }
 
 const HistorialLista = ({ items, esWalker, onFinalizar, onCancelar }: HistorialListaProps) => {
+  const modificando = useBookingsStore((state) => state.accion !== null);
+
   if (items.length === 0) {
     return <Text c="dimmed" size="sm">Aún no hay paseos en el historial.</Text>;
   }
@@ -163,13 +146,13 @@ const HistorialLista = ({ items, esWalker, onFinalizar, onCancelar }: HistorialL
             {formatearDuracion(p.duracionMin)} · {formatearPrecio(p.precio)}
           </Text>
           {p.estado === "accepted" && esWalker && (
-            <Button size="xs" variant="light" onClick={() => onFinalizar(p.id)}>
+            <Button size="xs" variant="light" disabled={modificando} onClick={() => onFinalizar(p.id)}>
               Marcar como finalizado
             </Button>
           )}
 
           {p.estado === "accepted" && !esWalker && (
-            <Button size="xs" variant="outline" color="red" onClick={() => onCancelar(p.id)}>
+            <Button size="xs" variant="outline" color="red" disabled={modificando} onClick={() => onCancelar(p.id)}>
               Cancelar paseo
             </Button>
           )}

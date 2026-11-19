@@ -1,21 +1,7 @@
 import axios from "axios";
-import type { EstadoPaseo, PaseoData } from "../types/data";
+import type { EstadoPaseo, PaseoData, ReservaData } from "../types/data";
 import walkerService from "./walkers";
 import { authConfig } from "./http";
-
-interface BackendBooking {
-  id: string;
-  walker: string;
-  owner: string;
-  pet: string;
-  date: string;
-  startTime: string;
-  durationMinutes: number;
-  pickupAddress: string;
-  notes?: string;
-  totalPrice: number;
-  status: EstadoPaseo;
-}
 
 interface BackendPet {
   id: string;
@@ -31,9 +17,9 @@ interface BackendUser {
 
 const TAMANOS = { small: "pequeño", medium: "mediano", large: "grande" } as const;
 
-const adaptBooking = (
-  b: BackendBooking,
-  pet?: BackendPet,
+export const adaptBooking = (
+  b: ReservaData,
+  pet?: Omit<BackendPet, "id">,
   dueno?: string,
   paseador?: string
 ): PaseoData => ({
@@ -54,7 +40,7 @@ const adaptBooking = (
 // Reservas del paseador logueado (el backend filtra según la sesión)
 const getAll = async (): Promise<PaseoData[]> => {
   const [bookingsRes, petsRes] = await Promise.all([
-    axios.get<BackendBooking[]>("/bookings", authConfig()),
+    axios.get<ReservaData[]>("/bookings", authConfig()),
     axios.get<BackendPet[]>("/pets", authConfig()),
   ]);
 
@@ -72,7 +58,7 @@ const getAll = async (): Promise<PaseoData[]> => {
 
 // Una reserva del dueño logueado, con nombre de mascota y de paseador
 const getById = async (id: string): Promise<PaseoData> => {
-  const { data: booking } = await axios.get<BackendBooking>(`/bookings/${id}`, authConfig());
+  const { data: booking } = await axios.get<ReservaData>(`/bookings/${id}`, authConfig());
   const [pet, walker] = await Promise.all([
     axios.get<BackendPet>(`/pets/${booking.pet}`, authConfig()).then((r) => r.data),
     walkerService.getById(booking.walker),
@@ -81,7 +67,7 @@ const getById = async (id: string): Promise<PaseoData> => {
 };
 
 const updateStatus = async (id: string, status: EstadoPaseo): Promise<EstadoPaseo> => {
-  const response = await axios.put<BackendBooking>(`/bookings/${id}`, { status }, authConfig());
+  const response = await axios.put<ReservaData>(`/bookings/${id}`, { status }, authConfig());
   return response.data.status;
 };
 

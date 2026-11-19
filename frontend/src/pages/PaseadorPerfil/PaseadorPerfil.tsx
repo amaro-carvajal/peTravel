@@ -1,6 +1,7 @@
 import { Avatar, Badge, Button, Center, Container, Group, List, Loader, Paper, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { Link, useParams } from "react-router-dom";
-import type { PaseadorData, UsuarioData } from "../../types/data";
+import type { PaseadorData } from "../../types/data";
+import { useAuthStore } from "../../stores/authStore";
 import classes from "./PaseadorPerfil.module.css";
 import { useEffect, useState } from "react";
 import walkerService from "../../services/walkers";
@@ -9,12 +10,12 @@ const listProps = { listStyleType: "none", spacing: "xs", classNames: { item: cl
 
 interface PaseadorPerfilProps {
   id?: string;
-  usuario?: UsuarioData | null;
   perfil?: PaseadorData;
   onEditar?: () => void;
 }
 
-const PaseadorPerfil = ({ id: idProp, usuario, perfil, onEditar }: PaseadorPerfilProps = {}) => {
+const PaseadorPerfil = ({ id: idProp, perfil, onEditar }: PaseadorPerfilProps = {}) => {
+  const rol = useAuthStore((state) => state.usuario?.rol);
   const { id: idParam } = useParams<{ id: string }>();
   const id = idProp ?? idParam;
   const [paseadorCargado, setPaseador] = useState<PaseadorData | null>(null);
@@ -84,7 +85,7 @@ const PaseadorPerfil = ({ id: idProp, usuario, perfil, onEditar }: PaseadorPerfi
           </Group>
 
           <Stack gap="xl" p="xl" className={classes.body}>
-            {usuario?.rol !== "walker" && (
+            {rol !== "walker" && (
               <Group justify="flex-end">
                 <Button component={Link} to={`/paseadores/${paseador.id}/agendar`}
                 state={{ from: `/paseadores/${paseador.id}/agendar` }}

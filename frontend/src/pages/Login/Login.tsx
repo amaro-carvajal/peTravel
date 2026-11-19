@@ -1,41 +1,23 @@
-import { useState, type SyntheticEvent } from "react";
-import axios from "axios";
+import { useEffect, useState, type SyntheticEvent } from "react";
 import { Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
-import { Link, useNavigate } from "react-router-dom";
-import authService from "../../services/auth";
-import type { UsuarioData } from "../../types/data";
+import { Link } from "react-router-dom";
+import { useAuthStore } from "../../stores/authStore";
 import classes from "./Login.module.css";
 
-interface LoginProps {
-  onLoginSuccess: (usuario: UsuarioData) => void;
-}
+const Login = () => {
+  const login = useAuthStore((state) => state.login);
+  const cargando = useAuthStore((state) => state.cargando);
+  const errorSesion = useAuthStore((state) =>
+    state.error?.accion === "login" ? state.error.mensaje : null);
+  const limpiarError = useAuthStore((state) => state.limpiarError);
 
-const Login = ({ onLoginSuccess }: LoginProps) => {
-  const navigate = useNavigate();
+  useEffect(() => () => limpiarError("login"), [limpiarError]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [cargando, setCargando] = useState(false);
 
   const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
-    setCargando(true);
-
-    try {
-      const usuario = await authService.login(email, password);
-      onLoginSuccess(usuario);
-      navigate("/");
-    } catch (err: unknown) {
-      if (axios.isAxiosError<{ error: string }>(err)) {
-        const mensaje = err.response?.data?.error || "Error al iniciar sesión. Verifica tus datos.";
-        setError(mensaje);
-      } else {
-        setError("Error al iniciar sesión. Verifica tus datos.");
-      }
-    } finally {
-      setCargando(false);
-    }
+    await login(email, password);
   };
 
   return (
@@ -50,7 +32,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
 
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
-            {error && <div className={classes.errorBox}>{error}</div>}
+            {errorSesion && <div className={classes.errorBox}>{errorSesion}</div>}
 
             <TextInput
               label="Correo electrónico"

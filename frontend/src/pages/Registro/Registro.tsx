@@ -1,32 +1,33 @@
-import { useState, type SubmitEvent } from "react";
-import axios from "axios";
+import { useEffect, useState, type SubmitEvent } from "react";
 import { Button, Container, NativeSelect, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
-import { Link, useNavigate } from "react-router-dom";
-import authService from "../../services/auth";
-import type { RolUsuario, UsuarioData } from "../../types/data";
+import { Link } from "react-router-dom";
+import { useAuthStore } from "../../stores/authStore";
+import type { RolUsuario } from "../../types/data";
 import classes from "../Login/Login.module.css";
-
-interface RegistroProps {
-  onLoginSuccess: (usuario: UsuarioData) => void;
-}
 
 const ROLES = [
   { value: "owner", label: "Dueño de mascota (Busco paseador)" },
   { value: "walker", label: "Paseador (Ofrezco servicios de paseo)" },
 ];
 
-const Registro = ({ onLoginSuccess }: RegistroProps) => {
-  const navigate = useNavigate();
+const Registro = () => {
+  const registro = useAuthStore((state) => state.registro);
+  const cargando = useAuthStore((state) => state.cargando);
+  const errorSesion = useAuthStore((state) =>
+    state.error?.accion === "registro" ? state.error.mensaje : null);
+  const limpiarError = useAuthStore((state) => state.limpiarError);
+
+  useEffect(() => () => limpiarError("registro"), [limpiarError]);
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState<RolUsuario>("owner");
   const [error, setError] = useState<string | null>(null);
-  const [cargando, setCargando] = useState(false);
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    limpiarError("registro");
 
     if (nombre.trim().length < 2) {
       setError("El nombre debe tener al menos 2 caracteres.");
@@ -38,24 +39,10 @@ const Registro = ({ onLoginSuccess }: RegistroProps) => {
       return;
     }
 
-    setCargando(true);
-
-    try {
-      await authService.register(nombre, email, password, rol);
-      const usuarioLogueado = await authService.login(email, password);
-      onLoginSuccess(usuarioLogueado);
-      navigate("/");
-    } catch (err: unknown) {
-      if (axios.isAxiosError<{ error: string }>(err)) {
-        const mensaje = err.response?.data?.error || "No se pudo completar el registro.";
-        setError(mensaje);
-      } else {
-        setError("No se pudo completar el registro.");
-      }
-    } finally {
-      setCargando(false);
-    }
+    await registro(nombre, email, password, rol);
   };
+
+  const mensaje = error ?? errorSesion;
 
   return (
     <Container size={1200} className={classes.wrapper}>
@@ -69,7 +56,7 @@ const Registro = ({ onLoginSuccess }: RegistroProps) => {
 
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
-            {error && <div className={classes.errorBox}>{error}</div>}
+            {mensaje && <div className={classes.errorBox}>{mensaje}</div>}
 
             <TextInput
               label="Nombre completo"
