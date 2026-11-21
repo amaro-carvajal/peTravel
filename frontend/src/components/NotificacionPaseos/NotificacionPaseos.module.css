@@ -1,0 +1,8 @@
+.wrapper {
+  padding-top: 16px;
+}
+
+.alerta {
+  border: 1px solid var(--mantine-color-gray-3);
+  box-shadow: 0 4px 12px rgba(13, 71, 161, 0.06);
+}

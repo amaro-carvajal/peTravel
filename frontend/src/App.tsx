@@ -17,6 +17,7 @@ import AgendarPaseo from "./pages/AgendarPaseo/AgendarPaseo";
 import { FiltrosPaseadores, type FiltrosState } from "./components/FiltrosPaseadores";
 import RegistrarMascota from "./pages/RegistrarMascota/RegistrarMascota";
 import { Navbar } from "./components/Navbar";
+import { NotificacionPaseos } from "./components/NotificacionPaseos";
 import NotFound from "./pages/NotFound/NotFound";
 import { GuestRoute, ProtectedRoute } from "./routes/ProtectedRoute";
 import { rutasProtegidas } from "./routes/rutasProtegidas";
@@ -120,6 +121,7 @@ const App = () => {
   return (
     <>
       <Navbar />
+      <NotificacionPaseos />
       <Routes>
         <Route
           path="/"

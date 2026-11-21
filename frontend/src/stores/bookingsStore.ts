@@ -12,9 +12,11 @@ interface BookingsStore {
   accion: AccionReserva | null;
   error: string | null;
   errorAccion: { tipo: AccionReserva; mensaje: string } | null;
+  notificacionDescartada: boolean;
   cargar: () => Promise<void>;
   crear: (reserva: NuevaReservaData, mascota: MascotaData, paseador: string) => Promise<boolean | null>;
   cambiarEstado: (id: string, estado: EstadoPaseo) => Promise<void>;
+  descartarNotificacion: () => void;
   limpiarErrorAccion: () => void;
   limpiar: () => void;
 }
@@ -25,6 +27,7 @@ const estadoInicial = {
   accion: null,
   error: null,
   errorAccion: null,
+  notificacionDescartada: false,
 };
 
 export const useBookingsStore = create<BookingsStore>((set, get) => {
@@ -92,6 +95,7 @@ export const useBookingsStore = create<BookingsStore>((set, get) => {
       }, "No se pudo actualizar el paseo.");
     },
     limpiarErrorAccion: () => set({ errorAccion: null }),
+    descartarNotificacion: () => set({ notificacionDescartada: true }),
     limpiar: () => {
       sesion += 1;
       set(estadoInicial);

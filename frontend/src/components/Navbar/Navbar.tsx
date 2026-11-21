@@ -1,6 +1,7 @@
-import { Button, Container, Group, Menu, Stack, Text, Title } from "@mantine/core";
+import { Badge, Button, Container, Group, Menu, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
+import { useBookingsStore } from "../../stores/bookingsStore";
 import classes from "./Navbar.module.css";
 
 const Navbar = () => {
@@ -9,6 +10,10 @@ const Navbar = () => {
   const cargando = useAuthStore((state) => state.cargando);
   const error = useAuthStore((state) =>
     state.error?.accion === "logout" || state.error?.accion === "restaurar" ? state.error.mensaje : null);
+  const paseos = useBookingsStore((state) => state.paseos);
+  const pendientes = paseos.filter((p) => p.estado === "pending").length;
+  const agendados = paseos.filter((p) => p.estado === "accepted").length;
+  const totalActivos = usuario?.rol === "walker" ? pendientes + agendados : 0;
 
   return (
     <nav className={classes.navbar}>
@@ -40,6 +45,13 @@ const Navbar = () => {
                   <Button
                     variant="subtle"
                     size="sm"
+                    leftSection={
+                      totalActivos > 0 ? (
+                        <Badge size="xs" circle color={pendientes > 0 ? "orange" : "cyan"} aria-hidden="true">
+                          {totalActivos}
+                        </Badge>
+                      ) : undefined
+                    }
                     rightSection={<span className={classes.chevron} aria-hidden="true">▾</span>}
                     className={classes.menuButton}
                     aria-label="Abrir menú Mi espacio"
@@ -57,7 +69,17 @@ const Navbar = () => {
                       Mis mascotas
                     </Menu.Item>
                   )}
-                  <Menu.Item component={Link} to="/mis-paseos">
+                  <Menu.Item
+                    component={Link}
+                    to="/mis-paseos"
+                    rightSection={
+                      totalActivos > 0 ? (
+                        <Badge size="xs" circle color={pendientes > 0 ? "orange" : "blue"} aria-hidden="true">
+                          {totalActivos}
+                        </Badge>
+                      ) : undefined
+                    }
+                  >
                     Mis paseos
                   </Menu.Item>
                   {usuario.rol === "walker" && (
