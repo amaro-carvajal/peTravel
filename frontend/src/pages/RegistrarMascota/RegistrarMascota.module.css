@@ -42,3 +42,13 @@
   transform: translateX(-3px);
   box-shadow: 0 4px 14px rgba(13, 71, 161, 0.18);
 }
+
+@media (max-width: 36em) {
+  .wrapper {
+    margin: 20px auto;
+  }
+
+  .card {
+    padding: 20px;
+  }
+}

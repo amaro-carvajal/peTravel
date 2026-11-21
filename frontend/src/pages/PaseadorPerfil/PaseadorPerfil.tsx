@@ -41,23 +41,24 @@ const PaseadorPerfil = ({ id: idProp, perfil, onEditar }: PaseadorPerfilProps = 
 
   return (
     <Container component="main" size={1200} py={36}>
-      <Button
-        component={Link}
-        to="/"
-        variant="light"
-        color="blue"
-        radius="xl"
-        leftSection="←"
-        mb="md"
-        className={classes.volver}
-      >
-        Volver a paseadores
-      </Button>
-      {onEditar && (
-        <Button onClick={onEditar} mb="md" ml="md">
-          Editar perfil
+      <Group justify="space-between" wrap="wrap" gap="sm" mb="md">
+        <Button
+          component={Link}
+          to="/"
+          variant="light"
+          color="blue"
+          radius="xl"
+          leftSection="←"
+          className={classes.volver}
+        >
+          Volver a paseadores
         </Button>
-      )}
+        {onEditar && (
+          <Button onClick={onEditar}>
+            Editar perfil
+          </Button>
+        )}
+      </Group>
       {!perfil && cargando ? (
         <Center py="xl">
           <Loader color="blue" />
@@ -72,7 +73,7 @@ const PaseadorPerfil = ({ id: idProp, perfil, onEditar }: PaseadorPerfilProps = 
             <Avatar src={paseador.foto} alt={`Foto de ${paseador.nombre}`} size={80} variant="white" color="#0d47a1">
               {paseador.nombre.charAt(0).toUpperCase()}
             </Avatar>
-            <div>
+            <div className={classes.headerInfo}>
               <Title order={2}>{paseador.nombre}</Title>
               <Group gap="sm">
                 <Badge className={classes.badge}>comuna: {paseador.comuna}</Badge>
@@ -84,7 +85,7 @@ const PaseadorPerfil = ({ id: idProp, perfil, onEditar }: PaseadorPerfilProps = 
             </div>
           </Group>
 
-          <Stack gap="xl" p="xl" className={classes.body}>
+          <Stack gap="xl" className={classes.body}>
             {rol !== "walker" && (
               <Group justify="flex-end">
                 <Button component={Link} to={`/paseadores/${paseador.id}/agendar`}>

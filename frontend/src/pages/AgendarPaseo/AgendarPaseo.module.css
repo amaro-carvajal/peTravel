@@ -60,7 +60,15 @@
 }
 
 @media (max-width: 36em) {
+  .wrapper {
+    margin: 20px auto;
+  }
+
   .card {
     padding: 22px;
+  }
+
+  .calendario {
+    max-width: 100%;
   }
 }

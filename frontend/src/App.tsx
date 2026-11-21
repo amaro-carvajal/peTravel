@@ -133,7 +133,7 @@ const App = () => {
                     estadoMascotas === "loaded" &&
                     cantidadMascotas === 0)) && (
                 <Paper className={classes.mascotaBanner}>
-                  <Group justify="space-between" align="center">
+                  <Group justify="space-between" align="center" gap="md">
                     <div>
                       <div className={classes.bannerTitulo}>
                        ¿Buscas un paseo para tu perro?

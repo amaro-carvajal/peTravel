@@ -90,3 +90,31 @@
   --badge-bg: #f1f5f9;
   --badge-color: #475569;
 }
+
+.filaInfo {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.filaMascota {
+  min-width: 140px;
+}
+
+.filaAcciones {
+  flex-shrink: 0;
+}
+
+@media (max-width: 36em) {
+  .panel {
+    padding: 16px;
+  }
+
+  .filaMascota {
+    min-width: 0;
+  }
+
+  .filaAcciones {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

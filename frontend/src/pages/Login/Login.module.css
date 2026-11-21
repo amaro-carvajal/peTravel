@@ -43,3 +43,13 @@
 .link:hover {
   text-decoration: underline;
 }
+
+@media (max-width: 36em) {
+  .wrapper {
+    margin: 24px auto;
+  }
+
+  .card {
+    padding: 20px;
+  }
+}

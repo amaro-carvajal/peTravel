@@ -137,39 +137,46 @@ const HistorialLista = ({ items, esWalker, onFinalizar, onCancelar }: HistorialL
   return (
     <div className={classes.historial}>
       {items.map((p) => (
-        <Group key={p.id} className={classes.fila} wrap="nowrap">
-          <Text fw={600} size="sm" c="#1e3a8a" w={140}>{p.mascota} · {p.raza}</Text>
-          <Badge className={`${classes.estado} ${classes[p.estado]}`}>
-            {ETIQUETA_ESTADO[p.estado]}
-          </Badge>
-          <Text size="sm" c="dimmed" style={{ flex: 1 }}>
-            {formatearDuracion(p.duracionMin)} · {formatearPrecio(p.precio)}
-          </Text>
-          {p.estado === "accepted" && esWalker && (
-            <Button size="xs" variant="light" disabled={modificando} onClick={() => onFinalizar(p.id)}>
-              Marcar como finalizado
-            </Button>
-          )}
+        <Group key={p.id} className={classes.fila} justify="space-between" align="center" gap="xs" wrap="wrap">
+          <Group gap="xs" wrap="wrap" className={classes.filaInfo}>
+            <Text fw={600} size="sm" c="#1e3a8a" className={classes.filaMascota}>
+              {p.mascota} · {p.raza}
+            </Text>
+            <Badge className={`${classes.estado} ${classes[p.estado]}`}>
+              {ETIQUETA_ESTADO[p.estado]}
+            </Badge>
+            <Text size="sm" c="dimmed">
+              {formatearDuracion(p.duracionMin)} · {formatearPrecio(p.precio)}
+            </Text>
+          </Group>
 
-          {p.estado === "accepted" && !esWalker && (
-            <Button size="xs" variant="outline" color="red" disabled={modificando} onClick={() => onCancelar(p.id)}>
-              Cancelar paseo
-            </Button>
-          )}
+          <Group gap="xs" wrap="wrap" className={classes.filaAcciones}>
+            {p.estado === "accepted" && esWalker && (
+              <Button size="xs" variant="light" disabled={modificando} onClick={() => onFinalizar(p.id)}>
+                Marcar como finalizado
+              </Button>
+            )}
 
-          {p.estado == "completed" && !esWalker && (
-            <Button
-              component={Link}
-              to={`/paseos/${p.id}/resena`}
-              size="xs"
-              variant="light"
-              color="teal"
-            >
-              Dejar reseña
-            </Button>
-          )}
+            {p.estado === "accepted" && !esWalker && (
+              <Button size="xs" variant="outline" color="red" disabled={modificando} onClick={() => onCancelar(p.id)}>
+                Cancelar paseo
+              </Button>
+            )}
 
-          <Text size="xs" c="dimmed">{formatearFecha(p.fecha)}</Text>
+            {p.estado === "completed" && !esWalker && (
+              <Button
+                component={Link}
+                to={`/paseos/${p.id}/resena`}
+                size="xs"
+                variant="light"
+                color="teal"
+              >
+                Dejar reseña
+              </Button>
+            )}
+
+            <Text size="xs" c="dimmed">{formatearFecha(p.fecha)}</Text>
+          </Group>
         </Group>
       ))}
     </div>

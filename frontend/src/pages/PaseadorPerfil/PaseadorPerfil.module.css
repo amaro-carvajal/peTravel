@@ -11,6 +11,11 @@
   background: linear-gradient(135deg, #0d47a1, #1e3a8a);
 }
 
+.headerInfo {
+  min-width: 0;
+  flex: 1;
+}
+
 .header h2 { 
   margin-bottom: 0.75rem; 
   font-size: 1.8rem; 
@@ -26,6 +31,10 @@
   font-size: 0.9rem;
   font-weight: 500;
   text-transform: none;
+}
+
+.body {
+  padding: 2rem;
 }
 
 .body h3 {
@@ -58,6 +67,10 @@
   color: #1e3a8a; 
 }
 
+.contacto p {
+  overflow-wrap: anywhere;
+}
+
 .resena p { 
   margin: 0.5rem 0; 
 }
@@ -81,4 +94,19 @@
 .volver:hover {
   transform: translateX(-3px);
   box-shadow: 0 4px 14px rgba(13, 71, 161, 0.18);
+}
+
+@media (max-width: 36em) {
+  .header {
+    padding: 1.5rem 1.25rem;
+    --group-gap: 1rem;
+  }
+
+  .header h2 {
+    font-size: 1.35rem;
+  }
+
+  .body {
+    padding: 1.25rem;
+  }
 }

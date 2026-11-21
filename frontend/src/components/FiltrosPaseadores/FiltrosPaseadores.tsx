@@ -53,7 +53,7 @@ const FiltrosPaseadores = ({ filtros, comunas, onFiltroChange }: FiltrosPaseador
       />
     </div>
 
-    <div className={classes.filtro}>
+    <div className={`${classes.filtro} ${classes.filtroSlider}`}>
       <label>Max: ${filtros.tarifaMax.toLocaleString("es-CL")}</label>
       <Slider
         className={classes.slider}

@@ -79,11 +79,11 @@ const FormularioResena = () => {
   return (
     <Container component="main" size={560} py={36}>
       <Paper className={classes.tarjeta}>
-        <Group component="header" wrap="nowrap" className={classes.header}>
+        <Group component="header" className={classes.header}>
           <Avatar size={64} color="blue" bg="white" c="#1e3a8a" fw={700}>
             {paseo.paseador.charAt(0)}
           </Avatar>
-          <div>
+          <div className={classes.headerInfo}>
             <Text className={classes.nombre}>{paseo.paseador}</Text>
             <Group gap="xs" mt={6}>
               <Badge className={classes.badge}>Paseo finalizado</Badge>
@@ -93,7 +93,7 @@ const FormularioResena = () => {
           </div>
         </Group>
 
-        <Stack p="xl" gap="lg">
+        <Stack gap="lg" className={classes.body}>
           {enviado ? (
             <>
               <Alert color="green" title="¡Gracias por tu reseña!">
@@ -125,7 +125,7 @@ const FormularioResena = () => {
 
               {errorEnvio && <Alert color="red">{errorEnvio}</Alert>}
 
-              <Group justify="flex-end">
+              <Group justify="flex-end" wrap="wrap">
                 <Button component={Link} to="/mis-paseos" variant="outline">Cancelar</Button>
                 <Button onClick={handleSubmit} disabled={!puedeEnviar} loading={enviando}>
                   Enviar reseña

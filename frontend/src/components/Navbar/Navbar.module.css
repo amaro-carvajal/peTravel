@@ -64,11 +64,47 @@
 }
 
 @media (max-width: 48em) {
+  .navbar {
+    padding: 12px 0;
+  }
+
+  .topRow {
+    row-gap: 10px;
+  }
+
+  .titulo {
+    font-size: 1.65rem;
+  }
+
+  .subtitulo {
+    font-size: 0.85rem;
+  }
+
   .accountActions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 8px;
   }
 
   .userInfo {
-    font-size: 0.85rem;
+    white-space: normal;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 36em) {
+  .subtitulo {
+    display: none;
+  }
+
+  .userInfo {
+    flex-basis: 100%;
+  }
+
+  .guestActions {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
   }
 }

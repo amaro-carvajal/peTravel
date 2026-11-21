@@ -18,7 +18,7 @@ const Navbar = () => {
   return (
     <nav className={classes.navbar}>
       <Container size={1200}>
-        <Group justify="space-between" align="center">
+        <Group justify="space-between" align="center" className={classes.topRow}>
           <Stack gap={4}>
             <Link to="/" className={classes.brandLink}>
               <Title order={1} className={classes.titulo}>
@@ -102,7 +102,7 @@ const Navbar = () => {
               </Button>
             </Group>
           ) : (
-            <Group gap="sm">
+            <Group gap="sm" className={classes.guestActions}>
               <Button
                 component={Link}
                 to="/login"
