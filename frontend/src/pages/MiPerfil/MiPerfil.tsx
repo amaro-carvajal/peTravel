@@ -54,7 +54,10 @@ const MiPerfil = () => {
       key={perfil?.id ?? "nuevo"}
       perfil={perfil}
       onGuardado={(guardado) => {
-        setPerfil(guardado);
+        setPerfil((anterior) => ({
+          ...guardado,
+          resenas: anterior?.resenas ?? guardado.resenas,
+        }));
         setEditando(false);
       }}
       onCancelar={perfil ? () => setEditando(false) : undefined}

@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Review from "../models/review";
 import Booking from "../models/booking";
 import middleware from "../utils/middleware";
+import { syncWalkerRating } from "../utils/walkerRating";
 
 const router = express.Router();
 
@@ -100,6 +101,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
 
   try {
     const savedReview = await review.save();
+    await syncWalkerRating(savedReview.walker);
     response.status(201).json(savedReview);
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === 11000) {
@@ -154,6 +156,7 @@ router.put("/:id", middleware.withUser, middleware.requireRole("owner"), async (
   if (comment !== undefined) review.comment = comment;
 
   const updatedReview = await review.save();
+  await syncWalkerRating(updatedReview.walker);
   response.json(updatedReview);
 });
 
@@ -171,6 +174,7 @@ router.delete("/:id", middleware.withUser, middleware.requireRole("owner"), asyn
   }
 
   await Review.findByIdAndDelete(request.params.id);
+  await syncWalkerRating(review.walker);
   response.status(204).end();
 });
 

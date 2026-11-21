@@ -15,6 +15,7 @@ const reviewSchema = new mongoose.Schema<ReviewData>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Walker",
       required: true,
+      index: true,
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,

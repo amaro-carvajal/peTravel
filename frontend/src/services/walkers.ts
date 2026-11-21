@@ -55,7 +55,7 @@ const adaptWalker = (backendWalker: BackendWalker, resenas: Resena[] = []): Perf
   comuna: backendWalker.coverageAreas?.[0] || 'Sin comuna',
   zonas: backendWalker.coverageAreas || [],
   tarifa: backendWalker.hourlyRate,
-  calificacion: backendWalker.rating ?? 5,
+  calificacion: backendWalker.rating ?? 0,
   descripcion: backendWalker.description,
   foto: backendWalker.photo,
   horarios: backendWalker.availability || [],
@@ -69,16 +69,11 @@ const adaptWalker = (backendWalker: BackendWalker, resenas: Resena[] = []): Perf
   resenas,
 });
 
-const getAll = async (): Promise<PaseadorData[]> => {
-  const response = await axios.get<BackendWalker[]>(baseUrl);
-  return response.data.map((walker: BackendWalker) => adaptWalker(walker));
-};
+const fetchWalkerReviews = async (walkerId: string): Promise<Resena[]> => {
+  const reviewsRes = await axios
+    .get<BackendReview[]>(`/reviews?walker=${walkerId}`)
+    .catch(() => ({ data: [] as BackendReview[] }));
 
-const getById = async (id: string): Promise<PerfilPaseadorData> => {
-  const [walkerRes, reviewsRes] = await Promise.all([
-    axios.get<BackendWalker>(`${baseUrl}/${id}`),
-    axios.get<BackendReview[]>(`/reviews?walker=${id}`).catch(() => ({ data: [] as BackendReview[] })),
-  ]);
   let usuariosMap: Record<string, string> = {};
 
   if (reviewsRes.data.length > 0) {
@@ -91,20 +86,34 @@ const getById = async (id: string): Promise<PerfilPaseadorData> => {
       usuariosMap = {};
     }
   }
-  const resenasAdaptadas: Resena[] = reviewsRes.data.map((r: BackendReview) => ({
+
+  return reviewsRes.data.map((r: BackendReview) => ({
     id: r.id,
     autor: usuariosMap[r.author] || 'Cliente verificado',
     puntaje: r.rating,
     comentario: r.comment,
     fecha: r.createdAt ? new Date(r.createdAt).toISOString().split('T')[0] : 'Reciente',
   }));
+};
 
-  return adaptWalker(walkerRes.data, resenasAdaptadas);
+const getAll = async (): Promise<PaseadorData[]> => {
+  const response = await axios.get<BackendWalker[]>(baseUrl);
+  return response.data.map((walker: BackendWalker) => adaptWalker(walker));
+};
+
+const getById = async (id: string): Promise<PerfilPaseadorData> => {
+  const [walkerRes, resenas] = await Promise.all([
+    axios.get<BackendWalker>(`${baseUrl}/${id}`),
+    fetchWalkerReviews(id),
+  ]);
+
+  return adaptWalker(walkerRes.data, resenas);
 };
 
 const getMe = async (): Promise<PerfilPaseadorData> => {
   const response = await axios.get<BackendWalker>(`${baseUrl}/me`);
-  return adaptWalker(response.data);
+  const resenas = await fetchWalkerReviews(response.data.id);
+  return adaptWalker(response.data, resenas);
 };
 
 export interface NuevoPaseadorData {
