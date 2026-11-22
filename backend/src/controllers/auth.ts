@@ -152,7 +152,7 @@ router.get("/me", middleware.withUser, async (request, response) => {
   const user = await User.findById(request.userId);
 
   if (!user) {
-    response.status(404).json({ error: "Sesión requerida" });
+    response.status(404).json({ error: "Usuario no encontrado" });
     return;
   }
 

@@ -54,7 +54,7 @@ const requestLogger = (
 };
 
 const unknownEndpoint = (request: Request, response: Response) => {
-  response.status(404).send({ error: "unknown endpoint" });
+  response.status(404).json({ error: "endpoint no encontrado" });
 };
 
 const errorHandler = (
@@ -78,9 +78,10 @@ const errorHandler = (
   ) {
     response.status(400).json({ error: "JSON inválido" });
   } else if (error.name === "CastError") {
-    response.status(400).json({ error: "malformatted id" });
+    response.status(400).json({ error: "ID con formato inválido" });
   } else if (error.name === "ValidationError") {
-    response.status(400).json({ error: error.message });
+    logger.error("ValidationError:", error.message);
+    response.status(400).json({ error: "Datos inválidos" });
   } else if (error.name === "TokenExpiredError") {
     response.status(401).json({ error: "Token expirado" });
   } else if (error.name === "JsonWebTokenError") {

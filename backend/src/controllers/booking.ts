@@ -69,7 +69,7 @@ router.get("/:id", middleware.withUser, async (request, response) => {
     }
   }
 
-  response.status(403).json({ error: "No puedes consultar esta reserva" });
+  response.status(404).json({ error: "Reserva no encontrada" });
 });
 
 router.post("/", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {

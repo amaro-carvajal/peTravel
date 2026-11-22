@@ -72,7 +72,7 @@ router.get("/me", middleware.withUser, async (request, response) => {
 router.get("/:id", async (request, response) => {
   const walker = await Walker.findById(request.params.id);
   if (!walker) {
-    response.status(404).json({ error: "Walker no encontrado" });
+    response.status(404).json({ error: "Paseador no encontrado" });
     return;
   }
   response.json(walker);
@@ -109,32 +109,32 @@ router.post(
     } = request.body;
 
     if (!name) {
-      response.status(400).json({ error: "name missing" });
+      response.status(400).json({ error: "El nombre es obligatorio" });
       return;
     }
 
     if (!description) {
-      response.status(400).json({ error: "description missing" });
+      response.status(400).json({ error: "La descripción es obligatoria" });
       return;
     }
 
     if (!coverageAreas) {
-      response.status(400).json({ error: "coverageAreas missing" });
+      response.status(400).json({ error: "Las comunas de cobertura son obligatorias" });
       return;
     }
 
     if (hourlyRate === undefined) {
-      response.status(400).json({ error: "hourlyRate missing" });
+      response.status(400).json({ error: "La tarifa por hora es obligatoria" });
       return;
     }
 
     if (!phone) {
-      response.status(400).json({ error: "phone missing" });
+      response.status(400).json({ error: "El teléfono es obligatorio" });
       return;
     }
 
     if (!email) {
-      response.status(400).json({ error: "email missing" });
+      response.status(400).json({ error: "El correo es obligatorio" });
       return;
     }
 
@@ -178,7 +178,7 @@ router.put(
     const walker = await Walker.findById(request.params.id);
 
     if (!walker) {
-      response.status(404).json({ error: "Walker no encontrado" });
+      response.status(404).json({ error: "Paseador no encontrado" });
       return;
     }
 
@@ -251,7 +251,7 @@ router.delete(
     const walker = await Walker.findById(request.params.id);
 
     if (!walker) {
-      response.status(404).json({ error: "Walker no encontrado" });
+      response.status(404).json({ error: "Paseador no encontrado" });
       return;
     }
 

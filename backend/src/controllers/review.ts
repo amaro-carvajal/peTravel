@@ -75,7 +75,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
   }
 
   if (selectedBooking.owner.toString() !== request.userId) {
-    response.status(403).json({ error: "La reserva no te pertenece" });
+    response.status(404).json({ error: "Reserva no encontrada" });
     return;
   }
 
@@ -87,7 +87,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
   const existingReview = await Review.findOne({ booking });
 
   if (existingReview) {
-    response.status(400).json({ error: "La reserva ya tiene una reseña" });
+    response.status(409).json({ error: "La reserva ya tiene una reseña" });
     return;
   }
 
@@ -105,7 +105,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
     response.status(201).json(savedReview);
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === 11000) {
-      response.status(400).json({ error: "La reserva ya tiene una reseña" });
+      response.status(409).json({ error: "La reserva ya tiene una reseña" });
       return;
     }
 
