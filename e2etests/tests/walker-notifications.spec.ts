@@ -127,4 +127,123 @@ test.describe("Notificaciones de paseador", () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("link", { name: "Ver mis paseos" })).toHaveCount(0);
   });
+
+  test("mantiene visibles los paseos aceptados en la pestaña Solicitudes aunque existan más de 3 paseos finalizados", async ({
+    page,
+    playwright,
+    baseURL,
+  }) => {
+    const apiBaseUrl = baseURL ?? "http://127.0.0.1:4317";
+    const walkerApi = await playwright.request.newContext({ baseURL: apiBaseUrl });
+    const ownerApi = await playwright.request.newContext({ baseURL: apiBaseUrl });
+
+    const walker = await crearUsuario(walkerApi, "walker");
+
+    try {
+      const walkerCsrf = await iniciarSesionApi(walkerApi, walker.email, walker.password);
+      const walkerRes = await walkerApi.post("/walkers", {
+        headers: { "X-CSRF-Token": walkerCsrf },
+        data: {
+          name: "Paseador Agenda Visible",
+          description: "Paseador con agenda y varios paseos finalizados",
+          coverageAreas: ["Providencia"],
+          hourlyRate: 5000,
+          phone: "+56 9 7777 8888",
+          email: walker.email,
+          availability: [
+            {
+              days: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+              startTime: "08:00",
+              endTime: "20:00",
+            },
+          ],
+        },
+      });
+      expect(walkerRes.status()).toBe(201);
+      const walkerProfile = (await walkerRes.json()) as IdResponse;
+
+      const owner = await crearUsuario(ownerApi, "owner");
+      const ownerCsrf = await iniciarSesionApi(ownerApi, owner.email, owner.password);
+
+      const maxRes = await ownerApi.post("/pets", {
+        headers: { "X-CSRF-Token": ownerCsrf },
+        data: { name: "Max", breed: "Labrador", size: "large" },
+      });
+      expect(maxRes.status()).toBe(201);
+      const maxPet = (await maxRes.json()) as IdResponse;
+
+      const lunaRes = await ownerApi.post("/pets", {
+        headers: { "X-CSRF-Token": ownerCsrf },
+        data: { name: "Luna", breed: "Mestiza", size: "medium" },
+      });
+      expect(lunaRes.status()).toBe(201);
+      const lunaPet = (await lunaRes.json()) as IdResponse;
+
+      const diaISO = (offsetDias: number) =>
+        new Date(Date.now() + offsetDias * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+      // 1 paseo aceptado pendiente de finalizar en día + 1
+      const acceptedRes = await ownerApi.post("/bookings", {
+        headers: { "X-CSRF-Token": ownerCsrf },
+        data: {
+          pet: maxPet.id,
+          walker: walkerProfile.id,
+          date: diaISO(1),
+          startTime: "10:00",
+          durationMinutes: 60,
+          pickupAddress: "Av. Providencia 100",
+          totalPrice: 5000,
+        },
+      });
+      expect(acceptedRes.status()).toBe(201);
+      const acceptedId = ((await acceptedRes.json()) as IdResponse).id;
+      const markAccepted = await walkerApi.put(`/bookings/${acceptedId}`, {
+        headers: { "X-CSRF-Token": walkerCsrf },
+        data: { status: "accepted" },
+      });
+      expect(markAccepted.status()).toBe(200);
+
+      // 4 paseos finalizados más recientes (días +2 a +5) que antes desplazaban al aceptado fuera de slice(0, 3)
+      for (const offset of [2, 3, 4, 5]) {
+        const res = await ownerApi.post("/bookings", {
+          headers: { "X-CSRF-Token": ownerCsrf },
+          data: {
+            pet: lunaPet.id,
+            walker: walkerProfile.id,
+            date: diaISO(offset),
+            startTime: "10:00",
+            durationMinutes: 60,
+            pickupAddress: "Av. Providencia 200",
+            totalPrice: 5000,
+          },
+        });
+        expect(res.status()).toBe(201);
+        const bookingId = ((await res.json()) as IdResponse).id;
+
+        const r1 = await walkerApi.put(`/bookings/${bookingId}`, {
+          headers: { "X-CSRF-Token": walkerCsrf },
+          data: { status: "accepted" },
+        });
+        expect(r1.status()).toBe(200);
+        const r2 = await walkerApi.put(`/bookings/${bookingId}`, {
+          headers: { "X-CSRF-Token": walkerCsrf },
+          data: { status: "completed" },
+        });
+        expect(r2.status()).toBe(200);
+      }
+    } finally {
+      await Promise.all([walkerApi.dispose(), ownerApi.dispose()]);
+    }
+
+    await iniciarSesion(page, walker);
+    await page.goto("/mis-paseos");
+
+    const panelSolicitudes = page.getByRole("tabpanel", { name: /Solicitudes/ });
+    await expect(panelSolicitudes.getByRole("heading", { name: "Paseos agendados (1)" })).toBeVisible();
+    await expect(panelSolicitudes.getByText("Max · Labrador")).toBeVisible();
+    await expect(panelSolicitudes.getByRole("button", { name: "Marcar como finalizado" })).toBeVisible();
+
+    await panelSolicitudes.getByRole("button", { name: "Marcar como finalizado" }).click();
+    await expect(panelSolicitudes.getByRole("heading", { name: "Paseos agendados (1)" })).toBeHidden();
+  });
 });

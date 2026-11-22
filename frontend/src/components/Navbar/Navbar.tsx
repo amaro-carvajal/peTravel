@@ -13,7 +13,15 @@ const Navbar = () => {
   const paseos = useBookingsStore((state) => state.paseos);
   const pendientes = paseos.filter((p) => p.estado === "pending").length;
   const agendados = paseos.filter((p) => p.estado === "accepted").length;
-  const totalActivos = usuario?.rol === "walker" ? pendientes + agendados : 0;
+  const resenasPendientes = paseos.filter((p) => p.estado === "completed" && !p.resenado).length;
+  const totalActivos =
+    usuario?.rol === "walker"
+      ? pendientes + agendados
+      : usuario?.rol === "owner"
+        ? resenasPendientes
+        : 0;
+  const colorBadgeBoton = usuario?.rol === "owner" ? "teal" : pendientes > 0 ? "orange" : "cyan";
+  const colorBadgeMenu = usuario?.rol === "owner" ? "teal" : pendientes > 0 ? "orange" : "blue";
 
   return (
     <nav className={classes.navbar}>
@@ -47,7 +55,7 @@ const Navbar = () => {
                     size="sm"
                     leftSection={
                       totalActivos > 0 ? (
-                        <Badge size="xs" circle color={pendientes > 0 ? "orange" : "cyan"} aria-hidden="true">
+                        <Badge size="xs" circle color={colorBadgeBoton} aria-hidden="true">
                           {totalActivos}
                         </Badge>
                       ) : undefined
@@ -74,7 +82,7 @@ const Navbar = () => {
                     to="/mis-paseos"
                     rightSection={
                       totalActivos > 0 ? (
-                        <Badge size="xs" circle color={pendientes > 0 ? "orange" : "blue"} aria-hidden="true">
+                        <Badge size="xs" circle color={colorBadgeMenu} aria-hidden="true">
                           {totalActivos}
                         </Badge>
                       ) : undefined

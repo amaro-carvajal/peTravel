@@ -116,6 +116,18 @@ const getMe = async (): Promise<PerfilPaseadorData> => {
   return adaptWalker(response.data, resenas);
 };
 
+const hasProfile = async (): Promise<boolean> => {
+  try {
+    await axios.get<BackendWalker>(`${baseUrl}/me`);
+    return true;
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      return false;
+    }
+    throw err;
+  }
+};
+
 export interface NuevoPaseadorData {
   name: string;
   description: string;
@@ -149,4 +161,4 @@ const update = async (id: string, paseador: ActualizarPaseadorData): Promise<Per
   return adaptWalker(response.data);
 };
 
-export default { getAll, getById, getMe, create, update };
+export default { getAll, getById, getMe, hasProfile, create, update };

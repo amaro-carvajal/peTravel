@@ -170,7 +170,7 @@ test.describe("Diseño responsive móvil", () => {
     await iniciarSesion(page, owner);
     await page.goto("/mis-mascotas");
     await expect(page.getByRole("heading", { name: "Mis mascotas" })).toBeVisible();
-    await expect(page.getByText("Toby")).toBeVisible();
+    await expect(page.getByText("🐾 Toby")).toBeVisible();
     await sinDesbordeHorizontal(page, "/mis-mascotas");
 
     await page.goto("/mascotas/nueva");

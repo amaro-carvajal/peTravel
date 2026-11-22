@@ -31,21 +31,34 @@ const GestionPaseos = () => {
     void cargar();
   }, [cargar]);
 
-  const solicitudes = paseos.filter((p) => p.estado === "pending");
-  const historial = paseos
-    .filter((p) => p.estado !== "pending")
-    .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const solicitudes = paseos
+    .filter((p) => p.estado === "pending")
+    .sort((a, b) => `${a.fecha} ${a.hora}`.localeCompare(`${b.fecha} ${b.hora}`));
+  const agendados = paseos
+    .filter((p) => p.estado === "accepted")
+    .sort((a, b) => `${a.fecha} ${a.hora}`.localeCompare(`${b.fecha} ${b.hora}`));
+  const historialFinalizados = paseos
+    .filter((p) => p.estado !== "pending" && p.estado !== "accepted")
+    .sort((a, b) => `${b.fecha} ${b.hora}`.localeCompare(`${a.fecha} ${a.hora}`));
+  const historialCompleto = [...agendados, ...historialFinalizados];
 
   return (
     <Container component="main" size={1200} py={36}>
       <Paper component="section" className={classes.panel}>
         <Group justify="space-between" className={classes.header}>
           <Title order={2} className={classes.titulo}>Mis paseos</Title>
-          {solicitudes.length > 0 && (
-            <Badge className={classes.contador}>
-              {solicitudes.length} {solicitudes.length === 1 ? "solicitud nueva" : "solicitudes nuevas"}
-            </Badge>
-          )}
+          <Group gap="xs">
+            {solicitudes.length > 0 && (
+              <Badge className={classes.contador}>
+                {solicitudes.length} {solicitudes.length === 1 ? "solicitud nueva" : "solicitudes nuevas"}
+              </Badge>
+            )}
+            {agendados.length > 0 && (
+              <Badge className={`${classes.estado} ${classes.accepted}`}>
+                {agendados.length} {agendados.length === 1 ? "paseo agendado" : "paseos agendados"}
+              </Badge>
+            )}
+          </Group>
         </Group>
 
         {errorAccion && (
@@ -107,12 +120,26 @@ const GestionPaseos = () => {
                 </SimpleGrid>
               )}
 
+              {agendados.length > 0 && (
+                <>
+                  <Title order={3} className={classes.subtitulo}>
+                    Paseos agendados ({agendados.length})
+                  </Title>
+                  <HistorialLista
+                    items={agendados}
+                    esWalker={esWalker}
+                    onFinalizar={(id) => cambiarEstado(id, "completed")}
+                    onCancelar={(id) => cambiarEstado(id, "cancelled")}
+                  />
+                </>
+              )}
+
               <Title order={3} className={classes.subtitulo}>Historial reciente</Title>
-              <HistorialLista items={historial.slice(0, 3)} esWalker={esWalker} onFinalizar={(id) => cambiarEstado(id, "completed")} onCancelar={(id) => cambiarEstado(id, "cancelled")} />
+              <HistorialLista items={historialFinalizados.slice(0, 3)} esWalker={esWalker} onFinalizar={(id) => cambiarEstado(id, "completed")} onCancelar={(id) => cambiarEstado(id, "cancelled")} />
             </Tabs.Panel>
 
             <Tabs.Panel value="historial">
-              <HistorialLista items={historial} esWalker={esWalker} onFinalizar={(id) => cambiarEstado(id, "completed")} onCancelar={(id) => cambiarEstado(id, "cancelled")} />
+              <HistorialLista items={historialCompleto} esWalker={esWalker} onFinalizar={(id) => cambiarEstado(id, "completed")} onCancelar={(id) => cambiarEstado(id, "cancelled")} />
             </Tabs.Panel>
           </Tabs>
         )}
@@ -181,7 +208,7 @@ const HistorialLista = ({ items, esWalker, onFinalizar, onCancelar }: HistorialL
               )
             )}
 
-            <Text size="xs" c="dimmed">{formatearFecha(p.fecha)}</Text>
+            <Text size="xs" c="dimmed">{formatearFecha(p.fecha)} · {p.hora}</Text>
           </Group>
         </Group>
       ))}

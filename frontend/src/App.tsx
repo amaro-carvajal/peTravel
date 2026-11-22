@@ -37,6 +37,10 @@ const App = () => {
   const restaurarSesion = useAuthStore((state) => state.restaurarSesion);
   const [cantidadMascotas, setCantidadMascotas] = useState(0);
   const [estadoMascotas, setEstadoMascotas] = useState<"idle" | "loading" | "loaded" | "error">("idle");
+  const [perfilPaseador, setPerfilPaseador] = useState<{
+    userId: string;
+    estado: "missing" | "exists" | "error";
+  } | null>(null);
   const [paseadores, setPaseadores] = useState<PaseadorData[]>([]);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +73,32 @@ const App = () => {
       .catch(() => {
         if (cancelado) return;
         setEstadoMascotas("error");
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [autenticando, usuario, location.pathname]);
+
+  useEffect(() => {
+    if (autenticando || location.pathname !== "/" || !usuario || usuario.rol !== "walker") {
+      return;
+    }
+
+    let cancelado = false;
+
+    walkerService
+      .hasProfile()
+      .then((tienePerfil) => {
+        if (cancelado) return;
+        setPerfilPaseador({
+          userId: usuario.id,
+          estado: tienePerfil ? "exists" : "missing",
+        });
+      })
+      .catch(() => {
+        if (cancelado) return;
+        setPerfilPaseador({ userId: usuario.id, estado: "error" });
       });
 
     return () => {
@@ -118,6 +148,12 @@ const App = () => {
 
   const limpiarFiltros = () => setFiltros(FILTROS_INICIALES);
 
+  const mostrarBannerPerfilPaseador =
+    !autenticando &&
+    usuario?.rol === "walker" &&
+    perfilPaseador?.userId === usuario.id &&
+    perfilPaseador.estado === "missing";
+
   const paginasProtegidas = [
     { ...rutasProtegidas.agendar, element: <AgendarPaseo /> },
     { ...rutasProtegidas.perfil, element: <MiPerfil /> },
@@ -163,6 +199,28 @@ const App = () => {
                   </Group>
                 </Paper>
               )}
+              {mostrarBannerPerfilPaseador && (
+                <Paper className={classes.mascotaBanner}>
+                  <Group justify="space-between" align="center" gap="md">
+                    <div>
+                      <div className={classes.bannerTitulo}>
+                        ¿Listo para ofrecer tus paseos?
+                      </div>
+                      <Text className={classes.bannerTexto}>
+                        Configura tu perfil de paseador con tu tarifa, comunas y disponibilidad para aparecer en el listado y recibir solicitudes.
+                      </Text>
+                    </div>
+                    <Button
+                      component={Link}
+                      to="/mi-perfil"
+                      size="md"
+                      color="blue"
+                    >
+                      Configurar perfil de paseador
+                    </Button>
+                  </Group>
+                </Paper>
+              )}
               <FiltrosPaseadores filtros={filtros} comunas={comunas} onFiltroChange={handleFiltroChange} />
 
               <Paper component="section" className={classes.panel}>
@@ -199,7 +257,7 @@ const App = () => {
                     <Text ta="center" c="dimmed">
                       Aún no hay paseadores registrados.
                     </Text>
-                    {usuario?.rol === "walker" && (
+                    {usuario?.rol === "walker" && !mostrarBannerPerfilPaseador && (
                       <Button component={Link} to="/mi-perfil" variant="light" size="sm">
                         Crear mi perfil de paseador
                       </Button>

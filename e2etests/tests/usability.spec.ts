@@ -107,22 +107,41 @@ test.describe("Usabilidad y reseñas", () => {
     await page.getByRole("button", { name: "Limpiar filtros" }).click();
     await expect(tarjeta).toBeVisible();
 
-    // 3 y 4. Iniciar sesión como dueño y enviar reseña de 5 estrellas
+    // 3 y 4. Iniciar sesión como dueño, probar el banner de reseña pendiente y enviar reseña de 5 estrellas
     await iniciarSesion(page, owner);
-    await page.goto("/mis-paseos");
-    await expect(page.getByRole("heading", { name: "Mis paseos" })).toBeVisible();
-    await page.getByRole("link", { name: "Dejar reseña" }).first().click();
+    const alertaResena = page.getByRole("status");
+    await expect(alertaResena).toContainText("Tienes una reseña pendiente");
+    await expect(alertaResena).toContainText("1 paseo finalizado pendiente de calificar");
+    await expect(alertaResena).toContainText("Milo");
+
+    await page.getByRole("button", { name: "Cerrar notificación de reseñas" }).click();
+    await expect(page.getByText("Tienes una reseña pendiente")).toBeHidden();
+    await page.getByRole("button", { name: "Abrir menú Mi espacio" }).click();
+    await page.getByRole("menuitem", { name: "Mis mascotas" }).click();
+    await expect(page).toHaveURL(/\/mis-mascotas$/);
+    await page.getByRole("link", { name: /peTravel/ }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("link", { name: "Dejar reseña" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await expect(page.getByRole("link", { name: "Iniciar sesión" })).toBeVisible();
+    await iniciarSesion(page, owner);
+    await expect(page.getByRole("status")).toContainText("Tienes una reseña pendiente");
+
+    await page.getByRole("link", { name: "Dejar reseña" }).click();
     await expect(page).toHaveURL(new RegExp(`/paseos/${completedBookingId}/resena$`));
+    await expect(page.getByText("Tienes una reseña pendiente")).toBeHidden();
 
     await page.locator('input[type="radio"][value="5"] + label').click();
     await page.getByLabel("Cuéntanos tu experiencia").fill("Excelente paseo con Milo");
     await page.getByRole("button", { name: "Enviar reseña" }).click();
     await expect(page.getByText("¡Gracias por tu reseña!")).toBeVisible();
 
-    // 5. Al volver al inicio, la tarjeta del paseador muestra su reputación actualizada (⭐ 5)
+    // 5. Al volver al inicio, la tarjeta muestra ⭐ 5 y desaparece el banner de reseña pendiente
     await page.getByRole("button", { name: "Volver al inicio" }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(tarjeta).toContainText("⭐ 5");
+    await expect(page.getByRole("link", { name: "Dejar reseña" })).toHaveCount(0);
 
     // 6. En Mis paseos ahora aparece el badge "Reseña enviada" en lugar del botón
     await page.goto("/mis-paseos");
@@ -133,5 +152,38 @@ test.describe("Usabilidad y reseñas", () => {
     await page.goto(`/paseos/${completedBookingId}/resena`);
     await expect(page.getByText("Reseña ya enviada")).toBeVisible();
     await expect(page.getByRole("button", { name: "Enviar reseña" })).toHaveCount(0);
+  });
+
+  test("muestra el banner para configurar perfil de paseador y lo oculta al crearlo", async ({
+    page,
+    request,
+  }) => {
+    const walker = await crearUsuario(request, "walker");
+    await iniciarSesion(page, walker);
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByText("¿Listo para ofrecer tus paseos?")).toBeVisible();
+    await page.getByRole("link", { name: "Configurar perfil de paseador" }).click();
+
+    await expect(page).toHaveURL(/\/mi-perfil$/);
+    await expect(page.getByRole("heading", { name: "Crea tu perfil de paseador" })).toBeVisible();
+
+    await page.getByLabel("Descripción").fill("Paseos diarios en Providencia");
+    const comunasInput = page.getByRole("combobox", { name: "Comunas de cobertura" });
+    await comunasInput.click();
+    await comunasInput.fill("Providencia");
+    await page.getByRole("option", { name: "Providencia", exact: true }).click();
+    await comunasInput.press("Escape");
+
+    await page.getByLabel("Tarifa por hora (CLP)").fill("6000");
+    await page.getByLabel("Teléfono").fill("+56 9 5555 6666");
+    await page.getByRole("button", { name: "Crear mi perfil" }).click();
+
+    await expect(page.getByRole("link", { name: "Volver a paseadores" })).toBeVisible();
+    await page.getByRole("link", { name: "Volver a paseadores" }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByText("¿Listo para ofrecer tus paseos?")).toBeHidden();
+    await expect(page.getByRole("link", { name: "Configurar perfil de paseador" })).toHaveCount(0);
   });
 });
