@@ -12,7 +12,10 @@ const theme = createTheme({
   fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
 })
 
-createRoot(document.getElementById('root')!).render(
+const root = document.getElementById('root');
+if (!root) throw new Error('No se encontró el elemento #root');
+
+createRoot(root).render(
   <StrictMode>
     <MantineProvider theme={theme}>
       <BrowserRouter>
