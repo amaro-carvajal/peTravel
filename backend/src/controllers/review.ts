@@ -7,6 +7,7 @@ import { syncWalkerRating } from "../utils/walkerRating";
 
 const router = express.Router();
 
+// GET /reviews: lista reseñas, opcionalmente por paseador (público)
 router.get("/", async (request, response) => {
   const { walker } = request.query;
 
@@ -19,6 +20,7 @@ router.get("/", async (request, response) => {
   response.json(reviews);
 });
 
+// GET /reviews/:id: detalle de una reseña (público)
 router.get("/:id", async (request, response) => {
   const review = await Review.findById(request.params.id);
 
@@ -30,6 +32,7 @@ router.get("/:id", async (request, response) => {
   response.json(review);
 });
 
+// POST /reviews: reseña de una reserva completada (sesión, rol owner)
 router.post("/", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {
   if (!request.userId) {
     response.status(401).json({ error: "Sesión requerida" });
@@ -113,6 +116,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
   }
 });
 
+// PUT /reviews/:id: edita una reseña propia (sesión, rol owner)
 router.put("/:id", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {
   const body: unknown = request.body;
 
@@ -160,6 +164,7 @@ router.put("/:id", middleware.withUser, middleware.requireRole("owner"), async (
   response.json(updatedReview);
 });
 
+// DELETE /reviews/:id: elimina una reseña propia (sesión, rol owner)
 router.delete("/:id", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {
   const review = await Review.findById(request.params.id);
 

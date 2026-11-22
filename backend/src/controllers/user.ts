@@ -6,11 +6,13 @@ import middleware from "../utils/middleware";
 const router = express.Router();
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// GET /users: lista usuarios (público)
 router.get("/", async (_request, response) => {
   const users = await User.find({});
   response.json(users);
 });
 
+// GET /users/:id: detalle de un usuario (público)
 router.get("/:id", async (request, response) => {
   const user = await User.findById(request.params.id);
 
@@ -22,6 +24,7 @@ router.get("/:id", async (request, response) => {
   response.json(user);
 });
 
+// POST /users: crea un usuario (público, duplica /auth/register)
 router.post("/", async (request, response) => {
   const body: unknown = request.body;
 
@@ -78,6 +81,7 @@ router.post("/", async (request, response) => {
   response.status(201).json(savedUser);
 });
 
+// PUT /users/:id: edita la propia cuenta (sesión)
 router.put("/:id", middleware.withUser, async (request, response) => {
   const body: unknown = request.body;
 
@@ -141,6 +145,7 @@ router.put("/:id", middleware.withUser, async (request, response) => {
   response.json(updatedUser);
 });
 
+// DELETE /users/:id: elimina la propia cuenta (sesión)
 router.delete("/:id", middleware.withUser, async (request, response) => {
   const user = await User.findById(request.params.id);
 

@@ -6,6 +6,7 @@ import middleware from "../utils/middleware";
 
 const router = express.Router();
 
+// GET /walkers: lista paseadores con filtros de comuna, tarifa, calificación y texto (público)
 router.get("/", async (request, response) => {
   const { commune, maxRate, minRating, search } = request.query;
   const filter: QueryFilter<WalkerData> = {};
@@ -58,6 +59,7 @@ router.get("/", async (request, response) => {
   response.json(walkers);
 });
 
+// GET /walkers/me: perfil del paseador autenticado (sesión)
 router.get("/me", middleware.withUser, async (request, response) => {
   const walker = await Walker.findOne({ user: request.userId });
 
@@ -69,6 +71,7 @@ router.get("/me", middleware.withUser, async (request, response) => {
   response.json(walker);
 });
 
+// GET /walkers/:id: perfil de un paseador por ID (público)
 router.get("/:id", async (request, response) => {
   const walker = await Walker.findById(request.params.id);
   if (!walker) {
@@ -78,6 +81,7 @@ router.get("/:id", async (request, response) => {
   response.json(walker);
 });
 
+// POST /walkers: crea el perfil de paseador del usuario (sesión, rol walker)
 router.post(
   "/",
   middleware.withUser,
@@ -156,6 +160,7 @@ router.post(
   }
 );
 
+// PUT /walkers/:id: edita el propio perfil de paseador (sesión, rol walker, dueño)
 router.put(
   "/:id",
   middleware.withUser,
@@ -238,6 +243,7 @@ router.put(
   }
 );
 
+// DELETE /walkers/:id: elimina el propio perfil de paseador (sesión, rol walker, dueño)
 router.delete(
   "/:id",
   middleware.withUser,

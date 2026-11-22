@@ -9,7 +9,8 @@ import { BLOCKING_STATUSES, bookingDay, dayRange, validateBookingSlot } from "..
 
 const router = express.Router();
 
-// Solo se exponen los intervalos ocupados, sin datos de owners, mascotas ni direcciones.
+// GET /bookings/occupied: intervalos ocupados de un paseador (sesión)
+// Solo se exponen los intervalos, sin datos de owners, mascotas ni direcciones.
 router.get("/occupied", middleware.withUser, async (request, response) => {
   const { walker, date } = request.query;
   const day = typeof date === "string" ? bookingDay(date) : null;
@@ -29,6 +30,7 @@ router.get("/occupied", middleware.withUser, async (request, response) => {
   })));
 });
 
+// GET /bookings: reservas propias del owner o del paseador asignado (sesión)
 router.get("/", middleware.withUser, async (request, response) => {
   if (request.userRole === "owner") {
     const bookings = await Booking.find({ owner: request.userId });
@@ -47,6 +49,7 @@ router.get("/", middleware.withUser, async (request, response) => {
   response.json(bookings);
 });
 
+// GET /bookings/:id: detalle de una reserva propia (sesión, 404 si no es tuya)
 router.get("/:id", middleware.withUser, async (request, response) => {
   const booking = await Booking.findById(request.params.id);
 
@@ -72,6 +75,7 @@ router.get("/:id", middleware.withUser, async (request, response) => {
   response.status(404).json({ error: "Reserva no encontrada" });
 });
 
+// POST /bookings: crea una solicitud validando disponibilidad (sesión, rol owner)
 router.post("/", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {
   if (!request.userId) {
     response.status(401).json({ error: "Sesión requerida" });
@@ -159,6 +163,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
   });
 });
 
+// PUT /bookings/:id: edita la reserva o cambia su estado (sesión, owner o paseador asignado)
 router.put("/:id", middleware.withUser, async (request, response) => {
   const body: unknown = request.body;
 
@@ -289,6 +294,7 @@ router.put("/:id", middleware.withUser, async (request, response) => {
   response.json(updatedBooking);
 });
 
+// DELETE /bookings/:id: elimina una reserva propia (sesión, rol owner)
 router.delete("/:id", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {
   const booking = await Booking.findById(request.params.id);
 

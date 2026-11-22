@@ -7,6 +7,7 @@ import { withPetLock } from "../utils/petLock";
 
 const router = express.Router();
 
+// GET /pets: mascotas del owner o de paseadores con reservas (sesión)
 router.get("/", middleware.withUser, async (request, response) => {
   if (request.userRole === "owner") {
     const pets = await Pet.find({ owner: request.userId });
@@ -28,6 +29,7 @@ router.get("/", middleware.withUser, async (request, response) => {
   response.json(pets);
 });
 
+// GET /pets/:id: detalle de mascota propia o con reserva (sesión)
 router.get("/:id", middleware.withUser, async (request, response) => {
   if (request.userRole === "owner") {
     const pet = await Pet.findOne({
@@ -71,6 +73,7 @@ router.get("/:id", middleware.withUser, async (request, response) => {
   response.json(pet);
 });
 
+// POST /pets: crea una mascota (sesión, rol owner)
 router.post("/", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {
   if (!request.userId) {
     response.status(401).json({ error: "Sesión requerida" });
@@ -118,6 +121,7 @@ router.post("/", middleware.withUser, middleware.requireRole("owner"), async (re
   response.status(201).json(savedPet);
 });
 
+// PUT /pets/:id: edita una mascota propia (sesión, rol owner)
 router.put("/:id", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {
   if (!request.userId) {
     response.status(401).json({ error: "Sesión requerida" });
@@ -185,6 +189,7 @@ router.put("/:id", middleware.withUser, middleware.requireRole("owner"), async (
   response.json(updatedPet);
 });
 
+// DELETE /pets/:id: elimina una mascota propia sin reservas (sesión, rol owner)
 router.delete("/:id", middleware.withUser, middleware.requireRole("owner"), async (request, response) => {
   if (!request.userId) {
     response.status(401).json({ error: "Sesión requerida" });
