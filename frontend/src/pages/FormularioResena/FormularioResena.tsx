@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import bookingService from "../../services/bookings";
 import reviewService from "../../services/reviews";
 import { mensajeError } from "../../services/http";
+import { useBookingsStore } from "../../stores/bookingsStore";
 import type { PaseoData } from "../../types/data";
 import { formatearDuracion, formatearFecha } from "../../utils/formato";
 import classes from "./FormularioResena.module.css";
@@ -23,6 +24,7 @@ const FormularioResena = () => {
   const [enviando, setEnviando] = useState<boolean>(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
   const [enviado, setEnviado] = useState<boolean>(false);
+  const marcarResenado = useBookingsStore((state) => state.marcarResenado);
 
   useEffect(() => {
     if (!id) return;
@@ -68,6 +70,7 @@ const FormularioResena = () => {
     setErrorEnvio(null);
     try {
       await reviewService.create({ booking: paseo.id, rating: puntaje, comment: comentario.trim() });
+      marcarResenado(paseo.id);
       setEnviado(true);
     } catch (err) {
       setErrorEnvio(mensajeError(err, "No se pudo enviar la reseña."));
@@ -100,6 +103,15 @@ const FormularioResena = () => {
                 Tu opinión ayuda a otros dueños a elegir paseadores de confianza.
               </Alert>
               <Button onClick={() => navigate("/")}>Volver al inicio</Button>
+            </>
+          ) : paseo.resenado ? (
+            <>
+              <Alert color="blue" title="Reseña ya enviada">
+                Ya calificaste este paseo. ¡Gracias por compartir tu experiencia!
+              </Alert>
+              <Button component={Link} to="/mis-paseos">
+                Volver a mis paseos
+              </Button>
             </>
           ) : (
             <>

@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { EstadoPaseo, PaseoData, ReservaData } from "../types/data";
+import type { BackendReview, EstadoPaseo, PaseoData, ReservaData } from "../types/data";
 import walkerService from "./walkers";
 import { authConfig } from "./http";
 
@@ -21,7 +21,8 @@ export const adaptBooking = (
   b: ReservaData,
   pet?: Omit<BackendPet, "id">,
   dueno?: string,
-  paseador?: string
+  paseador?: string,
+  resenado = false
 ): PaseoData => ({
   id: b.id,
   mascota: pet?.name ?? "Mascota",
@@ -35,17 +36,20 @@ export const adaptBooking = (
   dueno: dueno ?? "",
   paseador: paseador ?? "",
   estado: b.status,
+  resenado,
 });
 
 // Reservas del paseador logueado (el backend filtra según la sesión)
 const getAll = async (): Promise<PaseoData[]> => {
-  const [bookingsRes, petsRes] = await Promise.all([
+  const [bookingsRes, petsRes, reviewsRes] = await Promise.all([
     axios.get<ReservaData[]>("/bookings", authConfig()),
     axios.get<BackendPet[]>("/pets", authConfig()),
+    axios.get<BackendReview[]>("/reviews").catch(() => ({ data: [] as BackendReview[] })),
   ]);
 
   const bookings = bookingsRes.data;
   const pets = new Map(petsRes.data.map((p) => [p.id, p]));
+  const resenados = new Set(reviewsRes.data.map((r) => r.booking));
 
   const ownerIds = [...new Set(bookings.map((b) => b.owner))];
   const owners = await Promise.all(
@@ -53,17 +57,23 @@ const getAll = async (): Promise<PaseoData[]> => {
   );
   const ownerNames = new Map(owners.map((o) => [o.id, o.name]));
 
-  return bookings.map((b) => adaptBooking(b, pets.get(b.pet), ownerNames.get(b.owner)));
+  return bookings.map((b) =>
+    adaptBooking(b, pets.get(b.pet), ownerNames.get(b.owner), undefined, resenados.has(b.id))
+  );
 };
 
 // Una reserva del dueño logueado, con nombre de mascota y de paseador
 const getById = async (id: string): Promise<PaseoData> => {
   const { data: booking } = await axios.get<ReservaData>(`/bookings/${id}`, authConfig());
-  const [pet, walker] = await Promise.all([
+  const [pet, walker, reviewsRes] = await Promise.all([
     axios.get<BackendPet>(`/pets/${booking.pet}`, authConfig()).then((r) => r.data),
     walkerService.getById(booking.walker),
+    axios
+      .get<BackendReview[]>(`/reviews?walker=${booking.walker}`)
+      .catch(() => ({ data: [] as BackendReview[] })),
   ]);
-  return adaptBooking(booking, pet, undefined, walker.nombre);
+  const resenado = reviewsRes.data.some((r) => r.booking === booking.id);
+  return adaptBooking(booking, pet, undefined, walker.nombre, resenado);
 };
 
 const updateStatus = async (id: string, status: EstadoPaseo): Promise<EstadoPaseo> => {

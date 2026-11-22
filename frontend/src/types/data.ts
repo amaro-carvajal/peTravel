@@ -137,4 +137,5 @@ export interface PaseoData {
   dueno: string;
   paseador: string;
   estado: EstadoPaseo;
+  resenado?: boolean;
 }

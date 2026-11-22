@@ -164,15 +164,21 @@ const HistorialLista = ({ items, esWalker, onFinalizar, onCancelar }: HistorialL
             )}
 
             {p.estado === "completed" && !esWalker && (
-              <Button
-                component={Link}
-                to={`/paseos/${p.id}/resena`}
-                size="xs"
-                variant="light"
-                color="teal"
-              >
-                Dejar reseña
-              </Button>
+              p.resenado ? (
+                <Badge variant="light" color="teal" className={classes.estado}>
+                  Reseña enviada
+                </Badge>
+              ) : (
+                <Button
+                  component={Link}
+                  to={`/paseos/${p.id}/resena`}
+                  size="xs"
+                  variant="light"
+                  color="teal"
+                >
+                  Dejar reseña
+                </Button>
+              )
             )}
 
             <Text size="xs" c="dimmed">{formatearFecha(p.fecha)}</Text>

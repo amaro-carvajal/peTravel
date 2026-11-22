@@ -16,6 +16,7 @@ interface BookingsStore {
   cargar: () => Promise<void>;
   crear: (reserva: NuevaReservaData, mascota: MascotaData, paseador: string) => Promise<boolean | null>;
   cambiarEstado: (id: string, estado: EstadoPaseo) => Promise<void>;
+  marcarResenado: (id: string) => void;
   descartarNotificacion: () => void;
   limpiarErrorAccion: () => void;
   limpiar: () => void;
@@ -95,6 +96,10 @@ export const useBookingsStore = create<BookingsStore>((set, get) => {
       }, "No se pudo actualizar el paseo.");
     },
     limpiarErrorAccion: () => set({ errorAccion: null }),
+    marcarResenado: (id) =>
+      set(({ paseos }) => ({
+        paseos: paseos.map((paseo) => (paseo.id === id ? { ...paseo, resenado: true } : paseo)),
+      })),
     descartarNotificacion: () => set({ notificacionDescartada: true }),
     limpiar: () => {
       sesion += 1;

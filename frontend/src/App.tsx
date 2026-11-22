@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Badge, Button, Center, Container, Group, Loader, Paper, Text, Title } from "@mantine/core";
+import { Badge, Button, Center, Container, Group, Loader, Paper, Stack, Text, Title } from "@mantine/core";
 import type { PaseadorData } from "./types/data";
 import walkerService from "./services/walkers";
 import { useAuthStore } from "./stores/authStore";
@@ -23,6 +23,13 @@ import { GuestRoute, ProtectedRoute } from "./routes/ProtectedRoute";
 import { rutasProtegidas } from "./routes/rutasProtegidas";
 import classes from "./App.module.css";
 
+const FILTROS_INICIALES: FiltrosState = {
+  busqueda: "",
+  comuna: "Todas",
+  calificacionMinima: 0,
+  tarifaMax: 20000,
+};
+
 const App = () => {
   const location = useLocation();
   const usuario = useAuthStore((state) => state.usuario);
@@ -34,12 +41,7 @@ const App = () => {
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [filtros, setFiltros] = useState<FiltrosState>({
-    busqueda: "",
-    comuna: "Todas",
-    calificacionMinima: 0,
-    tarifaMax: 20000,
-  });
+  const [filtros, setFiltros] = useState<FiltrosState>(FILTROS_INICIALES);
 
   useEffect(() => {
     void restaurarSesion();
@@ -108,6 +110,14 @@ const App = () => {
     return coincideComuna && coincideTexto && coincideCalificacion && coincideTarifa;
   });
 
+  const hayFiltrosActivos =
+    filtros.busqueda.trim().length > 0 ||
+    filtros.comuna !== FILTROS_INICIALES.comuna ||
+    filtros.calificacionMinima !== FILTROS_INICIALES.calificacionMinima ||
+    filtros.tarifaMax !== FILTROS_INICIALES.tarifaMax;
+
+  const limpiarFiltros = () => setFiltros(FILTROS_INICIALES);
+
   const paginasProtegidas = [
     { ...rutasProtegidas.agendar, element: <AgendarPaseo /> },
     { ...rutasProtegidas.perfil, element: <MiPerfil /> },
@@ -160,7 +170,14 @@ const App = () => {
                   <Title order={2} className={classes.titulo}>
                     Paseadores disponibles
                   </Title>
-                  <Badge className={classes.contador}>{paseadoresAMostrar.length} disponibles</Badge>
+                  <Group gap="xs">
+                    {hayFiltrosActivos && paseadoresAMostrar.length > 0 && (
+                      <Button variant="subtle" size="compact-xs" onClick={limpiarFiltros}>
+                        Limpiar filtros
+                      </Button>
+                    )}
+                    <Badge className={classes.contador}>{paseadoresAMostrar.length} disponibles</Badge>
+                  </Group>
                 </Group>
 
                 {cargando ? (
@@ -177,10 +194,28 @@ const App = () => {
                       <PaseadorCard key={paseador.id} paseador={paseador} />
                     ))}
                   </div>
+                ) : paseadores.length === 0 ? (
+                  <Stack align="center" gap="xs" py="md">
+                    <Text ta="center" c="dimmed">
+                      Aún no hay paseadores registrados.
+                    </Text>
+                    {usuario?.rol === "walker" && (
+                      <Button component={Link} to="/mi-perfil" variant="light" size="sm">
+                        Crear mi perfil de paseador
+                      </Button>
+                    )}
+                  </Stack>
                 ) : (
-                  <Text ta="center" c="dimmed">
-                    No se encontraron paseadores con esos filtros.
-                  </Text>
+                  <Stack align="center" gap="sm" py="md">
+                    <Text ta="center" c="dimmed">
+                      No se encontraron paseadores con esos filtros.
+                    </Text>
+                    {hayFiltrosActivos && (
+                      <Button variant="light" size="sm" onClick={limpiarFiltros}>
+                        Limpiar filtros
+                      </Button>
+                    )}
+                  </Stack>
                 )}
               </Paper>
             </Container>
