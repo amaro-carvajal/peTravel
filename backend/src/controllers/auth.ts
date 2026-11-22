@@ -13,6 +13,9 @@ const SESSION_TIME_LIMIT = 60 * 60 * 1000; // 1h
 
 const cookieOptions = {
   httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
 };
 
 // POST /auth/register: crea el usuario guardando solo el hash
