@@ -3,6 +3,7 @@ import { mensajeError } from "../../services/http";
 import {
   Alert,
   Button,
+  Center,
   Loader,
   Container,
   NativeSelect,
@@ -93,7 +94,7 @@ const FormularioMascota = ({ mascota }: { mascota?: MascotaData }) => {
 
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
-          {error && <div role="alert" className={classes.errorBox}>{error}</div>}
+          {error && <Alert color="red" variant="light" role="alert">{error}</Alert>}
 
           <TextInput
             label="Nombre de la mascota"
@@ -152,7 +153,13 @@ const EditarMascota = ({ id }: { id: string }) => {
   }, [id]);
 
   if (error) return <Alert color="red" role="alert">{error}</Alert>;
-  if (!mascota) return <Loader aria-label="Cargando mascota" />;
+  if (!mascota) {
+    return (
+      <Center py="xl">
+        <Loader color="blue" aria-label="Cargando mascota" />
+      </Center>
+    );
+  }
   return <FormularioMascota mascota={mascota} />;
 };
 

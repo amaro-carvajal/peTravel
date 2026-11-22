@@ -76,11 +76,13 @@ const PaseadorPerfil = ({ id: idProp, perfil, onEditar }: PaseadorPerfilProps = 
             <div className={classes.headerInfo}>
               <Title order={2}>{paseador.nombre}</Title>
               <Group gap="sm">
-                <Badge className={classes.badge}>comuna: {paseador.comuna}</Badge>
+                <Badge className={classes.badge}>📍 {paseador.comuna}</Badge>
                 <Badge className={classes.badge}>
-                  tarifa: ${paseador.tarifa.toLocaleString("es-CL")}/hr
+                  ${paseador.tarifa.toLocaleString("es-CL")}/hr
                 </Badge>
-                <Badge className={classes.badge}>⭐ {paseador.calificacion}</Badge>
+                <Badge className={classes.badge}>
+                  {paseador.calificacion > 0 ? `⭐ ${paseador.calificacion}` : "Sin reseñas"}
+                </Badge>
               </Group>
             </div>
           </Group>

@@ -22,15 +22,6 @@
   margin-bottom: 24px;
 }
 
-.errorBox {
-  padding: 10px 14px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  color: #dc2626;
-  font-size: 0.9rem;
-}
-
 .cuenta {
   padding: 12px 14px;
   background: #eff6ff;

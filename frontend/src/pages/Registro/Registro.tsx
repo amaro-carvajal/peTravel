@@ -1,5 +1,5 @@
 import { useEffect, useState, type SubmitEvent } from "react";
-import { Button, Container, NativeSelect, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
+import { Alert, Button, Container, NativeSelect, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import type { RolUsuario } from "../../types/data";
@@ -57,7 +57,7 @@ const Registro = () => {
 
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
-            {mensaje && <div className={classes.errorBox}>{mensaje}</div>}
+            {mensaje && <Alert color="red" variant="light" role="alert">{mensaje}</Alert>}
 
             <TextInput
               label="Nombre completo"

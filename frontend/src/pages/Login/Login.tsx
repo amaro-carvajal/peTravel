@@ -1,5 +1,5 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
-import { Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
+import { Alert, Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import classes from "./Login.module.css";
@@ -33,7 +33,7 @@ const Login = () => {
 
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
-            {errorSesion && <div className={classes.errorBox}>{errorSesion}</div>}
+            {errorSesion && <Alert color="red" variant="light" role="alert">{errorSesion}</Alert>}
 
             <TextInput
               label="Correo electrónico"

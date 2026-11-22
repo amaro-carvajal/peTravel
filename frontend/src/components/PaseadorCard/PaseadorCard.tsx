@@ -27,8 +27,8 @@ const PaseadorCard = ({ paseador }: PaseadorCardProps) => {
         <Badge variant="light" color="gray" size="lg">
           ${paseador.tarifa.toLocaleString("es-CL")}/hr
         </Badge>
-        <Badge variant="light" color="gray" size="lg">
-          ⭐ {paseador.calificacion}
+        <Badge variant="light" color={paseador.calificacion > 0 ? "gray" : "blue"} size="lg">
+          {paseador.calificacion > 0 ? `⭐ ${paseador.calificacion}` : "Sin reseñas"}
         </Badge>
       </Group>
 

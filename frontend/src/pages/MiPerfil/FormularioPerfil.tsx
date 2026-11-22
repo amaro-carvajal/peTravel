@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Alert,
   Button,
   Container,
   Group,
@@ -182,7 +183,7 @@ const FormularioPerfil = ({ perfil, onGuardado, onCancelar }: FormularioPerfilPr
 
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
-            {error && <div className={classes.errorBox}>{error}</div>}
+            {error && <Alert color="red" variant="light" role="alert">{error}</Alert>}
 
             <Paper className={classes.cuenta}>
               <Text size="sm" c="dimmed">
