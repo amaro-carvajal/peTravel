@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { collectionName } from "../utils/config";
 
 export type PetSize = "small" | "medium" | "large";
 
@@ -55,6 +56,6 @@ petSchema.set("toJSON", {
   },
 });
 
-const Pet = mongoose.model<PetData>("Pet", petSchema);
+const Pet = mongoose.model<PetData>("Pet", petSchema, collectionName("pets"));
 
 export default Pet;

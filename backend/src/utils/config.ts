@@ -5,8 +5,12 @@ const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || "localhost";
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DBNAME = process.env.MONGODB_DBNAME;
+const MONGODB_COLLECTION_PREFIX = process.env.MONGODB_COLLECTION_PREFIX?.trim() || "";
 const JWT_SECRET = process.env.JWT_SECRET || "my_secret"; 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
+export const collectionName = (baseName: string): string =>
+  `${MONGODB_COLLECTION_PREFIX}${baseName}`;
 
 if (process.env.NODE_ENV === "test") {
   const baseDePruebas = MONGODB_URI?.match(
@@ -17,4 +21,4 @@ if (process.env.NODE_ENV === "test") {
   }
 }
 
-export default { PORT, HOST, MONGODB_URI, MONGODB_DBNAME, JWT_SECRET, CLIENT_URL };
+export default { PORT, HOST, MONGODB_URI, MONGODB_DBNAME, MONGODB_COLLECTION_PREFIX, JWT_SECRET, CLIENT_URL };

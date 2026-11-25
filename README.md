@@ -2,6 +2,10 @@
 
 Plataforma web que conecta a dueños de mascotas que necesitan ayuda para realizar paseos diarios con paseadores disponibles para ofrecer este servicio de manera confiable.
 
+## Aplicación desplegada
+
+* URL en el servidor del DCC: https://fullstack.dcc.uchile.cl:7020/
+
 ## Arquitectura y tecnología
 
 * **Frontend (`frontend/`):** SPA desarrollada con React, TypeScript, Vite, React Router, Zustand (`authStore` y `bookingsStore`) y Mantine (`@mantine/core`).
@@ -32,6 +36,7 @@ El backend lee su configuración desde `backend/.env` (ignorado por Git). Puedes
 | --- | --- | --- |
 | `MONGODB_URI` | URI de conexión a MongoDB (ej. `mongodb://127.0.0.1:27017`) | — *(requerida para conectar)* |
 | `MONGODB_DBNAME` | Nombre de la base de datos en MongoDB | — *(ej. `petravel`)* |
+| `MONGODB_COLLECTION_PREFIX` | Prefijo opcional para aislar las colecciones en bases compartidas (ej. `petravel_7020_`) | `""` *(opcional)* |
 | `PORT` | Puerto en que escucha Express | `3001` |
 | `HOST` | Host de escucha de Express | `localhost` |
 | `JWT_SECRET` | Secreto para firmar los tokens JWT de sesión | `my_secret` *(solo respaldo local; definir en `.env`)* |

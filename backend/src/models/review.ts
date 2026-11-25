@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { collectionName } from "../utils/config";
 
 export interface ReviewData {
   id: string;
@@ -59,6 +60,6 @@ reviewSchema.set("toJSON", {
   },
 });
 
-const Review = mongoose.model<ReviewData>("Review", reviewSchema);
+const Review = mongoose.model<ReviewData>("Review", reviewSchema, collectionName("reviews"));
 
 export default Review;

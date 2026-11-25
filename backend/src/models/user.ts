@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { collectionName } from "../utils/config";
 
 export type UserRole = "owner" | "walker";
 
@@ -57,6 +58,6 @@ userSchema.set("toJSON", {
   },
 });
 
-const User = mongoose.model<UserData>("User", userSchema);
+const User = mongoose.model<UserData>("User", userSchema, collectionName("users"));
 
 export default User;

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { collectionName } from "../utils/config";
 
 export type BookingStatus = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
 
@@ -84,6 +85,6 @@ bookingSchema.set("toJSON", {
   },
 });
 
-const Booking = mongoose.model<BookingData>("Booking", bookingSchema);
+const Booking = mongoose.model<BookingData>("Booking", bookingSchema, collectionName("bookings"));
 
 export default Booking;

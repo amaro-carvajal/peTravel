@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { collectionName } from "../utils/config";
 
 export type WalkerDay =
   | "monday"
@@ -119,6 +120,6 @@ walkerSchema.set("toJSON", {
   },
 });
 
-const Walker = mongoose.model<WalkerData>("Walker", walkerSchema);
+const Walker = mongoose.model<WalkerData>("Walker", walkerSchema, collectionName("walkers"));
 
 export default Walker;
